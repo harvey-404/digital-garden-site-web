@@ -4,6 +4,7 @@ import { listTags } from "../api/tags";
 import type { PostVO } from "../types";
 import PostCard from "../components/PostCard";
 import Spinner from "../components/Spinner";
+import { EmptyState, PageHeader, TagPill } from "../components/ui/PagePrimitives";
 
 export default function PostListPage() {
   const [posts, setPosts] = useState<PostVO[]>([]);
@@ -36,30 +37,51 @@ export default function PostListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
+      <PageHeader
+        title="灵感"
+        description="文章、笔记与想法。支持标签筛选与全文搜索。"
+      />
+
+      <div className="relative">
         <input
           value={keyword}
-          onChange={(e) => { setKeyword(e.target.value); setPage(0); }}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+            setPage(0);
+          }}
           placeholder="搜索文章…"
-          className="flex-1 rounded border px-3 py-2 text-sm"
+          className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 pl-10 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-accent)] focus:outline-none"
         />
+        <svg
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => { setActiveTag(undefined); setPage(0); }}
-          className={`rounded-full px-3 py-1 text-xs ${!activeTag ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
-        >
+        <TagPill active={!activeTag} onClick={() => { setActiveTag(undefined); setPage(0); }}>
           全部
-        </button>
+        </TagPill>
         {tags.map((t) => (
-          <button
+          <TagPill
             key={t}
-            onClick={() => { setActiveTag(t); setKeyword(""); setPage(0); }}
-            className={`rounded-full px-3 py-1 text-xs ${activeTag === t ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
+            active={activeTag === t}
+            onClick={() => {
+              setActiveTag(t);
+              setKeyword("");
+              setPage(0);
+            }}
           >
-            #{t}
-          </button>
+            {t}
+          </TagPill>
         ))}
       </div>
 
@@ -67,17 +89,31 @@ export default function PostListPage() {
         <Spinner />
       ) : (
         <div className="grid gap-4">
-          {posts.map((p) => <PostCard key={p.id} post={p} />)}
-          {posts.length === 0 && <p className="text-slate-400">没有匹配的文章</p>}
+          {posts.map((p) => (
+            <PostCard key={p.id} post={p} />
+          ))}
+          {posts.length === 0 && <EmptyState>没有匹配的文章</EmptyState>}
         </div>
       )}
 
-      <div className="flex items-center justify-center gap-4 text-sm">
-        <button disabled={page <= 0} onClick={() => setPage((p) => p - 1)} className="disabled:opacity-40">
+      <div className="flex items-center justify-center gap-4 text-sm text-[var(--color-text-muted)]">
+        <button
+          type="button"
+          disabled={page <= 0}
+          onClick={() => setPage((p) => p - 1)}
+          className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:opacity-40"
+        >
           上一页
         </button>
-        <span>{page + 1} / {totalPages}</span>
-        <button disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)} className="disabled:opacity-40">
+        <span className="tabular-nums">
+          {page + 1} / {totalPages}
+        </span>
+        <button
+          type="button"
+          disabled={page >= totalPages - 1}
+          onClick={() => setPage((p) => p + 1)}
+          className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] disabled:opacity-40"
+        >
           下一页
         </button>
       </div>

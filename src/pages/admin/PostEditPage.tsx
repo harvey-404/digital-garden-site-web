@@ -109,7 +109,7 @@ export default function PostEditPage() {
           className="w-full rounded border px-3 py-2 font-mono text-sm"
         />
         <div className="rounded border bg-white p-4">
-          <MarkdownView content={form.contentMd || "_预览区_"} />
+          <MarkdownView content={form.contentMd || "_预览区_"} variant="article" />
         </div>
       </div>
 

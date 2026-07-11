@@ -1,11 +1,32 @@
+@import "./styles/tokens.css";
+@import "./styles/article-prose.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
+@layer base {
+  html {
+    font-family: "DM Sans", system-ui, sans-serif;
+  }
+
+  body {
+    @apply antialiased;
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .font-serif {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif;
+  }
 }
 
-body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+.code-block pre {
+  background: transparent !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
 }

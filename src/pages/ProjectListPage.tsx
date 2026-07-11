@@ -3,6 +3,7 @@ import { listProjects } from "../api/projects";
 import type { ProjectVO } from "../types";
 import ProjectCard from "../components/ProjectCard";
 import Spinner from "../components/Spinner";
+import { EmptyState, PageHeader } from "../components/ui/PagePrimitives";
 
 export default function ProjectListPage() {
   const [projects, setProjects] = useState<ProjectVO[]>([]);
@@ -16,10 +17,12 @@ export default function ProjectListPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">成果展示</h1>
+      <PageHeader title="成果展示" description="做过的项目、实验与作品。" />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {projects.map((p) => <ProjectCard key={p.id} project={p} />)}
-        {projects.length === 0 && <p className="text-slate-400">还没有成果</p>}
+        {projects.map((p) => (
+          <ProjectCard key={p.id} project={p} />
+        ))}
+        {projects.length === 0 && <EmptyState>还没有成果</EmptyState>}
       </div>
     </div>
   );
