@@ -27,3 +27,7 @@ node_modules/
 dist/
 .env.production
 .env.local
+.env.e2e
+e2e-report/
+test-results/
+playwright-report/

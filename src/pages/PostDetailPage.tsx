@@ -29,30 +29,34 @@ export default function PostDetailPage() {
         setPost(p);
         setLikeCount(p.likeCount);
         setLiked(localStorage.getItem(LIKED_KEY_PREFIX + p.id) === "1");
-        return listComments(p.id);
+        return listComments(slug);
       })
       .then(setComments)
       .finally(() => setLoading(false));
   }, [slug]);
 
   const handleLike = async () => {
-    if (!post || liked) return;
-    const res = await likePost(post.id);
-    setLikeCount(res.likeCount);
-    setLiked(true);
-    localStorage.setItem(LIKED_KEY_PREFIX + post.id, "1");
+    if (!post || !slug || liked) return;
+    try {
+      const res = await likePost(slug);
+      setLikeCount(res.likeCount);
+      setLiked(true);
+      localStorage.setItem(LIKED_KEY_PREFIX + post.id, "1");
+    } catch {
+      // apiClient 已 toast 错误信息
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!post) return;
+    if (!post || !slug) return;
     if (!nickname.trim() || !content.trim()) {
       toast.error("昵称和内容不能为空");
       return;
     }
     setSubmitting(true);
     try {
-      await submitComment(post.id, nickname.trim(), content.trim());
+      await submitComment(slug, nickname.trim(), content.trim());
       toast.success("评论已提交，待审核通过后显示");
       setContent("");
     } finally {

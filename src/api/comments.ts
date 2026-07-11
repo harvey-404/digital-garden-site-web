@@ -1,12 +1,12 @@
 import apiClient from "./client";
 import type { CommentVO } from "../types";
 
-export function listComments(postId: number) {
-  return apiClient.get(`/posts/${postId}/comments`) as unknown as Promise<CommentVO[]>;
+export function listComments(postIdOrSlug: number | string) {
+  return apiClient.get(`/posts/${postIdOrSlug}/comments`) as unknown as Promise<CommentVO[]>;
 }
 
-export function submitComment(postId: number, nickname: string, content: string) {
-  return apiClient.post(`/posts/${postId}/comments`, { nickname, content }) as unknown as Promise<CommentVO>;
+export function submitComment(postIdOrSlug: number | string, nickname: string, content: string) {
+  return apiClient.post(`/posts/${postIdOrSlug}/comments`, { nickname, content }) as unknown as Promise<CommentVO>;
 }
 
 export function adminListComments(status = "PENDING") {
