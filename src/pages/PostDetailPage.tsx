@@ -9,7 +9,7 @@ import MarkdownView from "../components/MarkdownView";
 import PostArticleLayout from "../components/post/PostArticleLayout";
 import TableOfContents, { MobileTableOfContents } from "../components/post/TableOfContents";
 import Spinner from "../components/Spinner";
-import { extractHeadings, formatPostDate } from "../lib/markdown";
+import { extractHeadings, formatPostDate, normalizeMarkdown } from "../lib/markdown";
 
 const LIKED_KEY_PREFIX = "dg_liked_";
 
@@ -25,7 +25,10 @@ export default function PostDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [activeHeadingId, setActiveHeadingId] = useState<string | null>(null);
 
-  const headings = useMemo(() => (post ? extractHeadings(post.contentMd) : []), [post]);
+  const headings = useMemo(
+    () => (post ? extractHeadings(normalizeMarkdown(post.contentMd)) : []),
+    [post],
+  );
 
   useEffect(() => {
     if (!slug) return;

@@ -86,20 +86,22 @@
 .article-prose table {
   width: 100%;
   border-collapse: collapse;
-  display: block;
-  overflow-x: auto;
+  display: table;
+  margin: 1.5em 0;
   font-size: 0.9375rem;
+}
+
+.article-prose thead th {
+  background: var(--color-code-bg);
+  color: var(--color-heading);
+  font-weight: 600;
+  text-align: left;
 }
 
 .article-prose th,
 .article-prose td {
   border: 1px solid var(--color-border);
   padding: 0.5em 0.75em;
-}
-
-.article-prose th {
-  background: var(--color-surface);
-  font-weight: 600;
 }
 
 .article-prose hr {
@@ -181,4 +183,19 @@
 .dg-aside .dg-code-block {
   margin-top: 0.75rem;
   margin-bottom: 0;
+}
+
+.dg-aside .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.dg-aside .markdown-alert-title svg {
+  flex-shrink: 0;
+  opacity: 0.85;
 }
