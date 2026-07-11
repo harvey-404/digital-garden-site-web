@@ -40,8 +40,10 @@ export default function PostDetailPage() {
     try {
       const res = await likePost(slug);
       setLikeCount(res.likeCount);
-      setLiked(true);
-      localStorage.setItem(LIKED_KEY_PREFIX + post.id, "1");
+      setLiked(res.liked);
+      if (res.liked) {
+        localStorage.setItem(LIKED_KEY_PREFIX + post.id, "1");
+      }
     } catch {
       // apiClient 已 toast 错误信息
     }
@@ -85,12 +87,15 @@ export default function PostDetailPage() {
 
       <div className="flex justify-center">
         <button
+          type="button"
           onClick={handleLike}
           disabled={liked}
-          className={`rounded-full border px-6 py-2 text-sm transition ${
+          title={liked ? "你已赞过此文" : "点个赞"}
+          aria-pressed={liked}
+          className={`rounded-full border px-6 py-2 text-sm transition disabled:cursor-default disabled:opacity-100 ${
             liked
-              ? "border-red-200 bg-red-50 text-red-400"
-              : "hover:border-red-300 hover:text-red-500"
+              ? "border-red-400 bg-red-500 text-white shadow-sm"
+              : "border-slate-300 bg-white hover:border-red-400 hover:bg-red-50 hover:text-red-600"
           }`}
         >
           ♥ {liked ? "已赞" : "点赞"} · {likeCount}
