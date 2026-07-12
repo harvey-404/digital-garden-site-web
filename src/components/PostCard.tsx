@@ -17,7 +17,7 @@ export default function PostCard({ post }: { post: PostVO }) {
         </p>
       )}
       <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
-        <time dateTime={post.createdAt}>{formatPostDate(post.createdAt)}</time>
+        <time dateTime={new Date(post.inDtm * 1000).toISOString()}>{formatPostDate(post.inDtm)}</time>
         {post.tags.map((t) => (
           <span
             key={t}

@@ -172,7 +172,7 @@ export default function PostDetailPage() {
       </section>
 
       <p className="text-center text-xs text-[var(--color-text-muted)]">
-        最后更新于 {formatPostDate(post.updatedAt)}
+        最后更新于 {formatPostDate(post.updateDtm)}
       </p>
     </div>
   );
@@ -182,8 +182,8 @@ export default function PostDetailPage() {
       title={post.title}
       meta={{
         tags: post.tags,
-        createdAt: post.createdAt,
-        updatedAt: post.updatedAt,
+        inDtm: post.inDtm,
+        updateDtm: post.updateDtm,
         viewCount: post.viewCount,
       }}
       mobileToc={<MobileTableOfContents headings={headings} onNavigate={scrollToHeading} />}

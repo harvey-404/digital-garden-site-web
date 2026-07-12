@@ -15,18 +15,18 @@ export interface PostVO {
   id: number;
   title: string;
   slug: string;
-  summary: string | null;
-  coverImage: string | null;
+  summary: string;
+  coverImage: string;
   status: string;
   viewCount: number;
   likeCount: number;
   tags: string[];
-  createdAt: string;
+  inDtm: number;
 }
 
 export interface PostDetailVO extends PostVO {
   contentMd: string;
-  updatedAt: string;
+  updateDtm: number;
 }
 
 export interface PostRequest {
@@ -42,13 +42,13 @@ export interface PostRequest {
 export interface ProjectVO {
   id: number;
   title: string;
-  description: string | null;
-  coverImage: string | null;
-  projectUrl: string | null;
-  repoUrl: string | null;
-  techStack: string | null;
+  description: string;
+  coverImage: string;
+  projectUrl: string;
+  repoUrl: string;
+  techStack: string;
   sortOrder: number;
-  createdAt: string;
+  inDtm: number;
 }
 
 export interface ProjectRequest {
@@ -67,7 +67,7 @@ export interface CommentVO {
   nickname: string;
   content: string;
   status: string;
-  createdAt: string;
+  inDtm: number;
 }
 
 export interface ProfileVO {

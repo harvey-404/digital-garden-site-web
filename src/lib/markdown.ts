@@ -39,7 +39,7 @@ export function extractHeadings(markdown: string): TocHeading[] {
   return headings;
 }
 
-export function formatPostDate(iso: string): string {
-  const d = new Date(iso);
+export function formatPostDate(epochSeconds: number): string {
+  const d = new Date(epochSeconds * 1000);
   return d.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" });
 }

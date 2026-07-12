@@ -3,21 +3,21 @@ import { formatPostDate } from "../../lib/markdown";
 
 interface Props {
   tags: string[];
-  createdAt: string;
-  updatedAt: string;
+  inDtm: number;
+  updateDtm: number;
   viewCount: number;
 }
 
-function PostMeta({ tags, createdAt, updatedAt, viewCount }: Props) {
-  const showUpdated = updatedAt && updatedAt !== createdAt;
+function PostMeta({ tags, inDtm, updateDtm, viewCount }: Props) {
+  const showUpdated = updateDtm !== inDtm;
 
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--color-text-muted)]">
-      <span>发布于 {formatPostDate(createdAt)}</span>
+      <span>发布于 {formatPostDate(inDtm)}</span>
       {showUpdated && (
         <>
           <span aria-hidden>·</span>
-          <span>更新于 {formatPostDate(updatedAt)}</span>
+          <span>更新于 {formatPostDate(updateDtm)}</span>
         </>
       )}
       {tags.length > 0 && (
