@@ -4,6 +4,7 @@ import ThemeToggle from "./ThemeToggle";
 const links = [
   { to: "/", label: "首页", end: true },
   { to: "/posts", label: "灵感" },
+  { to: "/todos", label: "计划" },
   { to: "/projects", label: "成果" },
   { to: "/about", label: "关于" },
 ];

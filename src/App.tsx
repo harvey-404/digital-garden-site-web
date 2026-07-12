@@ -8,6 +8,8 @@ import HomePage from "./pages/HomePage";
 import PostListPage from "./pages/PostListPage";
 import PostDetailPage from "./pages/PostDetailPage";
 import ProjectListPage from "./pages/ProjectListPage";
+import TodoListPage from "./pages/TodoListPage";
+import TodoDetailPage from "./pages/TodoDetailPage";
 import AboutPage from "./pages/AboutPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import LoginPage from "./pages/admin/LoginPage";
@@ -16,6 +18,8 @@ import AdminPostListPage from "./pages/admin/AdminPostListPage";
 import PostEditPage from "./pages/admin/PostEditPage";
 import AdminProjectListPage from "./pages/admin/AdminProjectListPage";
 import ProjectEditPage from "./pages/admin/ProjectEditPage";
+import AdminTodoListPage from "./pages/admin/AdminTodoListPage";
+import TodoEditPage from "./pages/admin/TodoEditPage";
 import CommentModerationPage from "./pages/admin/CommentModerationPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 
@@ -30,6 +34,8 @@ export default function App() {
             <Route path="posts" element={<PostListPage />} />
             <Route path="posts/:slug" element={<PostDetailPage />} />
             <Route path="projects" element={<ProjectListPage />} />
+            <Route path="todos" element={<TodoListPage />} />
+            <Route path="todos/:slug" element={<TodoDetailPage />} />
             <Route path="about" element={<AboutPage />} />
           </Route>
           <Route path="/admin/login" element={<LoginPage />} />
@@ -48,6 +54,9 @@ export default function App() {
             <Route path="projects" element={<AdminProjectListPage />} />
             <Route path="projects/new" element={<ProjectEditPage />} />
             <Route path="projects/:id/edit" element={<ProjectEditPage />} />
+            <Route path="todos" element={<AdminTodoListPage />} />
+            <Route path="todos/new" element={<TodoEditPage />} />
+            <Route path="todos/:id/edit" element={<TodoEditPage />} />
             <Route path="comments" element={<CommentModerationPage />} />
             <Route path="profile" element={<ProfileEditPage />} />
           </Route>

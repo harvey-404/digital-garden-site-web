@@ -86,3 +86,33 @@ export interface LikeResponse {
   likeCount: number;
   liked: boolean;
 }
+
+export type TodoPriority = "HIGH" | "MEDIUM" | "LOW";
+
+export interface TodoVO {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  priority: TodoPriority;
+  progress: number;
+  status: string;
+  sortOrder: number;
+  inDtm: number;
+}
+
+export interface TodoDetailVO extends TodoVO {
+  planMd: string;
+  updateDtm: number;
+}
+
+export interface TodoRequest {
+  title: string;
+  slug: string;
+  description?: string;
+  planMd?: string;
+  priority?: TodoPriority;
+  progress?: number;
+  status?: string;
+  sortOrder?: number;
+}
