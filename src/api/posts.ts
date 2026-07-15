@@ -17,6 +17,10 @@ export function adminListPosts(page = 0, size = 10) {
   return apiClient.get("/admin/posts", { params: { page, size } }) as unknown as Promise<PageResult<PostVO>>;
 }
 
+export function adminGetPost(id: number) {
+  return apiClient.get(`/admin/posts/${id}`) as unknown as Promise<PostDetailVO>;
+}
+
 export function createPost(body: PostRequest) {
   return apiClient.post("/admin/posts", body) as unknown as Promise<PostDetailVO>;
 }

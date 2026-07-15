@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures/admin";
+import { adminUser, requireAdminPassword } from "./helpers/env";
 
 test.describe("后台管理页面", () => {
   test("TC-ADM-001: 概览页导航完整", async ({ adminPage }) => {
@@ -45,5 +46,38 @@ test.describe("后台管理页面", () => {
     await expect(adminPage.getByPlaceholder(/slug/)).toBeVisible();
     await expect(adminPage.getByPlaceholder("正文（Markdown）")).toBeVisible();
     await expect(adminPage.getByRole("button", { name: "发布" })).toBeVisible();
+  });
+
+  test("TC-ADM-007: 编辑草稿文章可加载正文", async ({ adminPage, request }) => {
+    const login = await request.post("/api/auth/login", {
+      data: {
+        username: adminUser,
+        password: requireAdminPassword(),
+      },
+    });
+    const loginJson = await login.json();
+    expect(loginJson.code).toBe(0);
+    const token = loginJson.data.token as string;
+    const slug = `e2e-draft-edit-${Date.now()}`;
+    const create = await request.post("/api/admin/posts", {
+      headers: { Authorization: `Bearer ${token}` },
+      data: {
+        title: "E2E Draft Edit",
+        slug,
+        contentMd: "## body for edit\n\nkeep me",
+        summary: "e2e",
+        coverImage: "",
+        status: "DRAFT",
+        tags: ["e2e"],
+      },
+    });
+    const created = await create.json();
+    expect(created.code).toBe(0);
+    const id = created.data.id as number;
+
+    await adminPage.goto(`/admin/posts/${id}/edit`);
+    await expect(adminPage.getByRole("heading", { name: "编辑文章" })).toBeVisible();
+    await expect(adminPage.getByPlaceholder("标题")).toHaveValue("E2E Draft Edit");
+    await expect(adminPage.getByPlaceholder("正文（Markdown）")).toHaveValue(/body for edit/);
   });
 });

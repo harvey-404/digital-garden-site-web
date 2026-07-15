@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { adminListPosts, createPost, updatePost, getPost } from "../../api/posts";
+import { adminGetPost, createPost, updatePost } from "../../api/posts";
 import { uploadImage } from "../../api/upload";
 import type { PostRequest } from "../../types";
 import MarkdownView from "../../components/MarkdownView";
@@ -19,22 +19,18 @@ export default function PostEditPage() {
 
   useEffect(() => {
     if (!id) return;
-    adminListPosts(0, 500).then((page) => {
-      const target = page.items.find((p) => p.id === Number(id));
-      if (!target) { toast.error("文章不存在"); return; }
-      getPost(target.slug).then((detail) => {
-        setForm({
-          title: detail.title,
-          slug: detail.slug,
-          contentMd: detail.contentMd,
-          summary: detail.summary ?? "",
-          coverImage: detail.coverImage ?? "",
-          status: detail.status,
-          tags: detail.tags,
-        });
-        setTagsInput(detail.tags.join(", "));
+    adminGetPost(Number(id)).then((detail) => {
+      setForm({
+        title: detail.title,
+        slug: detail.slug,
+        contentMd: detail.contentMd,
+        summary: detail.summary ?? "",
+        coverImage: detail.coverImage ?? "",
+        status: detail.status,
+        tags: detail.tags,
       });
-    });
+      setTagsInput(detail.tags.join(", "));
+    }).catch(() => toast.error("文章不存在"));
   }, [id]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
