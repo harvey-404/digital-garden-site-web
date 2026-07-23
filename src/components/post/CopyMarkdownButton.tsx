@@ -1,4 +1,5 @@
 import toast from "react-hot-toast";
+import { copyText } from "../../lib/clipboard";
 import { formatPostAsMarkdown } from "../../lib/markdown";
 
 export default function CopyMarkdownButton({
@@ -10,7 +11,7 @@ export default function CopyMarkdownButton({
 }) {
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(formatPostAsMarkdown(title, contentMd));
+      await copyText(formatPostAsMarkdown(title, contentMd));
       toast.success("已复制 Markdown");
     } catch {
       toast.error("复制失败");

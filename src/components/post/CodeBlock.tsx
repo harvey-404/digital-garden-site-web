@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTheme } from "../../context/ThemeContext";
+import { copyText } from "../../lib/clipboard";
 
 export default function CodeBlock({ code, lang }: { code: string; lang: string }) {
   const { resolved } = useTheme();
@@ -24,7 +25,7 @@ export default function CodeBlock({ code, lang }: { code: string; lang: string }
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(code.trimEnd());
+      await copyText(code.trimEnd());
       toast.success("已复制");
     } catch {
       toast.error("复制失败");
