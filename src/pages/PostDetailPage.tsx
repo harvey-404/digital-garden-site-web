@@ -6,6 +6,7 @@ import { likePost } from "../api/likes";
 import { listComments, submitComment } from "../api/comments";
 import type { PostDetailVO, CommentVO } from "../types";
 import MarkdownView from "../components/MarkdownView";
+import CopyMarkdownButton from "../components/post/CopyMarkdownButton";
 import PostArticleLayout from "../components/post/PostArticleLayout";
 import TableOfContents, { MobileTableOfContents } from "../components/post/TableOfContents";
 import Spinner from "../components/Spinner";
@@ -186,6 +187,9 @@ export default function PostDetailPage() {
         updateDtm: post.updateDtm,
         viewCount: post.viewCount,
       }}
+      headerActions={
+        <CopyMarkdownButton title={post.title} contentMd={post.contentMd} />
+      }
       mobileToc={<MobileTableOfContents headings={headings} onNavigate={scrollToHeading} />}
       toc={
         <TableOfContents

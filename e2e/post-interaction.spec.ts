@@ -51,4 +51,17 @@ test.describe("文章互动", () => {
     await page.getByRole("button", { name: "提交评论" }).click();
     await expect(page.getByText("昵称和内容不能为空")).toBeVisible();
   });
+
+  test("TC-POST-004: 复制 Markdown 到剪贴板", async ({ page, context }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await openFirstPost(page);
+
+    const title = (await page.locator("article h1").innerText()).trim();
+    await page.getByRole("button", { name: "复制 Markdown" }).click();
+    await expect(page.getByText("已复制 Markdown")).toBeVisible();
+
+    const clip = await page.evaluate(() => navigator.clipboard.readText());
+    expect(clip.startsWith(`# ${title}\n\n`)).toBe(true);
+    expect(clip.length).toBeGreaterThan(`# ${title}\n\n`.length);
+  });
 });

@@ -43,3 +43,8 @@ export function formatPostDate(epochSeconds: number): string {
   const d = new Date(epochSeconds * 1000);
   return d.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" });
 }
+
+/** Build clipboard Markdown: H1 title + blank line + raw body */
+export function formatPostAsMarkdown(title: string, contentMd: string): string {
+  return `# ${title}\n\n${contentMd}`;
+}

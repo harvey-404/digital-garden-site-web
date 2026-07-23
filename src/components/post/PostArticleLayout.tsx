@@ -44,6 +44,7 @@ function PostMeta({ tags, inDtm, updateDtm, viewCount }: Props) {
 interface LayoutProps {
   title: string;
   meta: Props;
+  headerActions?: ReactNode;
   toc?: ReactNode;
   mobileToc?: ReactNode;
   footer?: ReactNode;
@@ -53,6 +54,7 @@ interface LayoutProps {
 export default function PostArticleLayout({
   title,
   meta,
+  headerActions,
   toc,
   mobileToc,
   footer,
@@ -61,9 +63,12 @@ export default function PostArticleLayout({
   return (
     <article>
       <header className="mb-8 border-b border-[var(--color-border)] pb-8">
-        <h1 className="font-serif text-[clamp(2rem,5vw,2.75rem)] font-semibold leading-tight tracking-tight text-[var(--color-heading)]">
-          {title}
-        </h1>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <h1 className="font-serif text-[clamp(2rem,5vw,2.75rem)] font-semibold leading-tight tracking-tight text-[var(--color-heading)]">
+            {title}
+          </h1>
+          {headerActions}
+        </div>
         <div className="mt-4">
           <PostMeta {...meta} />
         </div>
