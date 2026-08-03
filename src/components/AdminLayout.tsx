@@ -5,6 +5,7 @@ const adminLinks = [
   { to: "/admin", label: "概览", end: true },
   { to: "/admin/posts", label: "文章" },
   { to: "/admin/todos", label: "计划" },
+  { to: "/admin/album", label: "足迹管理" },
   { to: "/admin/projects", label: "成果" },
   { to: "/admin/comments", label: "评论审核" },
   { to: "/admin/profile", label: "关于我" },

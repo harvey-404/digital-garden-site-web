@@ -6,6 +6,7 @@ const links = [
   { to: "/posts", label: "灵感" },
   { to: "/todos", label: "计划" },
   { to: "/projects", label: "成果" },
+  { to: "/album", label: "足迹" },
   { to: "/about", label: "关于" },
 ];
 

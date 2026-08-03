@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import Layout from "./components/Layout";
+import MapShellLayout from "./components/MapShellLayout";
 import AdminLayout from "./components/AdminLayout";
 import RequireAuth from "./components/RequireAuth";
 import HomePage from "./pages/HomePage";
@@ -20,8 +21,11 @@ import AdminProjectListPage from "./pages/admin/AdminProjectListPage";
 import ProjectEditPage from "./pages/admin/ProjectEditPage";
 import AdminTodoListPage from "./pages/admin/AdminTodoListPage";
 import TodoEditPage from "./pages/admin/TodoEditPage";
+import AdminAlbumListPage from "./pages/admin/AdminAlbumListPage";
+import AlbumEditPage from "./pages/admin/AlbumEditPage";
 import CommentModerationPage from "./pages/admin/CommentModerationPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
+import AlbumPage from "./pages/AlbumPage";
 
 export default function App() {
   return (
@@ -37,6 +41,9 @@ export default function App() {
             <Route path="todos" element={<TodoListPage />} />
             <Route path="todos/:slug" element={<TodoDetailPage />} />
             <Route path="about" element={<AboutPage />} />
+          </Route>
+          <Route element={<MapShellLayout />}>
+            <Route path="album" element={<AlbumPage />} />
           </Route>
           <Route path="/admin/login" element={<LoginPage />} />
           <Route
@@ -57,6 +64,9 @@ export default function App() {
             <Route path="todos" element={<AdminTodoListPage />} />
             <Route path="todos/new" element={<TodoEditPage />} />
             <Route path="todos/:id/edit" element={<TodoEditPage />} />
+            <Route path="album" element={<AdminAlbumListPage />} />
+            <Route path="album/new" element={<AlbumEditPage />} />
+            <Route path="album/:id/edit" element={<AlbumEditPage />} />
             <Route path="comments" element={<CommentModerationPage />} />
             <Route path="profile" element={<ProfileEditPage />} />
           </Route>
