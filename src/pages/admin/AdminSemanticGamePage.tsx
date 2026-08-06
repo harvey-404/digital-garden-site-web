@@ -125,6 +125,9 @@ export default function AdminSemanticGamePage() {
   return (
     <div className="max-w-3xl space-y-8">
       <h1 className="text-2xl font-bold">语义猜词</h1>
+      <p className="text-sm text-slate-500">
+        猜中后会自动出下一题；补词后若处于等待词库也会自动开局。答案只在此页显示，前台访客看不到。
+      </p>
 
       <section className="rounded border border-slate-200 bg-white p-5">
         <h2 className="mb-4 text-sm font-semibold text-slate-500">当前轮次</h2>
@@ -137,8 +140,8 @@ export default function AdminSemanticGamePage() {
               </dd>
             </div>
             <div>
-              <dt className="text-slate-400">目标词</dt>
-              <dd className="mt-0.5 font-medium">{status.targetWord || "—"}</dd>
+              <dt className="text-slate-400">答案（仅后台可见）</dt>
+              <dd className="mt-0.5 font-medium text-amber-700">{status.targetWord || "—"}</dd>
             </div>
             <div>
               <dt className="text-slate-400">待出题</dt>
