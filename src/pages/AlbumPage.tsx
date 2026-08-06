@@ -4,6 +4,7 @@ import { getPublishedPlace, listPublishedPlaces } from "../api/album";
 import {
   CHINA_AMAP_BOUNDS,
   CHINA_CENTER_LNG_LAT,
+  formatAmapLoadError,
   getAmapKey,
   loadAmap,
   type AMapNamespace,
@@ -81,23 +82,29 @@ export default function AlbumPage() {
           zoom: 4,
           center: CHINA_CENTER_LNG_LAT,
           viewMode: "2D",
-          mapStyle: "amap://styles/whitesmoke",
-          limitBounds,
           zooms: [3, 18],
         });
-        map.addControl(
-          new AMap.ToolBar({
-            position: { right: "12px", bottom: "210px" },
-          }),
-        );
+        map.setLimitBounds(limitBounds);
+        map.plugin(["AMap.ToolBar"], () => {
+          if (cancelled || !map) return;
+          try {
+            map.addControl(
+              new AMap.ToolBar({
+                position: { right: "12px", bottom: "210px" },
+              }),
+            );
+          } catch (e) {
+            console.warn("AMap.ToolBar skipped", e);
+          }
+        });
         mapRef.current = map;
         setMapReady(true);
         setMapError(null);
       })
       .catch((err: unknown) => {
-        console.error(err);
+        console.error("AMap load failed", err);
         if (!cancelled) {
-          setMapError("高德地图加载失败，请检查 Key、安全密钥与域名白名单");
+          setMapError(formatAmapLoadError(err));
         }
       });
 

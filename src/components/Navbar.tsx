@@ -7,6 +7,7 @@ const links = [
   { to: "/todos", label: "计划" },
   { to: "/projects", label: "成果" },
   { to: "/album", label: "足迹" },
+  { to: "/games", label: "乐园" },
   { to: "/about", label: "关于" },
 ];
 
