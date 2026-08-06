@@ -23,9 +23,12 @@ import AdminTodoListPage from "./pages/admin/AdminTodoListPage";
 import TodoEditPage from "./pages/admin/TodoEditPage";
 import AdminAlbumListPage from "./pages/admin/AdminAlbumListPage";
 import AlbumEditPage from "./pages/admin/AlbumEditPage";
+import AdminSemanticGamePage from "./pages/admin/AdminSemanticGamePage";
 import CommentModerationPage from "./pages/admin/CommentModerationPage";
 import ProfileEditPage from "./pages/admin/ProfileEditPage";
 import AlbumPage from "./pages/AlbumPage";
+import GamesPage from "./pages/GamesPage";
+import SemanticGamePage from "./pages/SemanticGamePage";
 
 export default function App() {
   return (
@@ -41,6 +44,8 @@ export default function App() {
             <Route path="todos" element={<TodoListPage />} />
             <Route path="todos/:slug" element={<TodoDetailPage />} />
             <Route path="about" element={<AboutPage />} />
+            <Route path="games" element={<GamesPage />} />
+            <Route path="games/semantic" element={<SemanticGamePage />} />
           </Route>
           <Route element={<MapShellLayout />}>
             <Route path="album" element={<AlbumPage />} />
@@ -67,6 +72,7 @@ export default function App() {
             <Route path="album" element={<AdminAlbumListPage />} />
             <Route path="album/new" element={<AlbumEditPage />} />
             <Route path="album/:id/edit" element={<AlbumEditPage />} />
+            <Route path="games/semantic" element={<AdminSemanticGamePage />} />
             <Route path="comments" element={<CommentModerationPage />} />
             <Route path="profile" element={<ProfileEditPage />} />
           </Route>
