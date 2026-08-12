@@ -8,6 +8,7 @@ import {
   adminSkipSemanticWord,
   adminStartSemanticRound,
   adminStopSemanticRound,
+  adminUpdateSemanticWordHints,
 } from "../../api/games";
 import type { SemanticRoundAdminVO, SemanticWordVO } from "../../types/game";
 import Spinner from "../../components/Spinner";
@@ -25,6 +26,8 @@ export default function AdminSemanticGamePage() {
   const [batchText, setBatchText] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [hintDraft, setHintDraft] = useState({ hint1: "", hint2: "", hint3: "" });
 
   const load = async () => {
     setLoading(true);
@@ -42,6 +45,7 @@ export default function AdminSemanticGamePage() {
   }, []);
 
   const pendingWords = words.filter((w) => w.status === "pending");
+  const activeWord = words.find((w) => w.status === "active");
 
   const handleStart = async () => {
     setBusy(true);
@@ -120,13 +124,98 @@ export default function AdminSemanticGamePage() {
     }
   };
 
+  const openHints = (w: SemanticWordVO) => {
+    setEditingId(w.id);
+    setHintDraft({
+      hint1: w.hint1 ?? "",
+      hint2: w.hint2 ?? "",
+      hint3: w.hint3 ?? "",
+    });
+  };
+
+  const handleSaveHints = async (id: number) => {
+    setBusy(true);
+    try {
+      await adminUpdateSemanticWordHints(id, {
+        hint1: hintDraft.hint1.trim(),
+        hint2: hintDraft.hint2.trim(),
+        hint3: hintDraft.hint3.trim(),
+      });
+      toast.success("提示已保存");
+      setEditingId(null);
+      await load();
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (loading && !status) return <Spinner />;
+
+  const hintEditor = (w: SemanticWordVO) =>
+    editingId === w.id ? (
+      <div className="mt-3 space-y-2 rounded border border-amber-100 bg-amber-50/60 p-3">
+        <p className="text-xs text-slate-500">
+          最多 3 条；全服每猜中 10 个不同词解锁下一级（程度由弱到强）。留空表示该级不提示。
+        </p>
+        {(
+          [
+            ["hint1", "提示 1（弱）", "hint1"],
+            ["hint2", "提示 2（中）", "hint2"],
+            ["hint3", "提示 3（强）", "hint3"],
+          ] as const
+        ).map(([key, label]) => (
+          <label key={key} className="block">
+            <span className="mb-1 block text-xs text-slate-500">{label}</span>
+            <input
+              value={hintDraft[key]}
+              maxLength={256}
+              onChange={(e) => setHintDraft((d) => ({ ...d, [key]: e.target.value }))}
+              className="w-full rounded border border-slate-200 px-2 py-1.5 text-sm outline-none focus:border-slate-400"
+              placeholder={label}
+            />
+          </label>
+        ))}
+        <div className="flex gap-2 pt-1">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void handleSaveHints(w.id)}
+            className="rounded bg-slate-900 px-3 py-1.5 text-xs text-white disabled:opacity-40"
+          >
+            保存提示
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setEditingId(null)}
+            className="rounded border border-slate-200 px-3 py-1.5 text-xs text-slate-600 disabled:opacity-40"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    ) : (
+      <div className="mt-2 text-xs text-slate-500">
+        {[w.hint1, w.hint2, w.hint3].filter((h) => h && h.trim()).length > 0
+          ? `已设 ${[w.hint1, w.hint2, w.hint3].filter((h) => h && h.trim()).length}/3 条提示`
+          : "尚未设置提示"}
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => openHints(w)}
+          className="ml-3 text-slate-800 underline disabled:opacity-40"
+        >
+          编辑提示
+        </button>
+      </div>
+    );
 
   return (
     <div className="max-w-3xl space-y-8">
       <h1 className="text-2xl font-bold">语义猜词</h1>
       <p className="text-sm text-slate-500">
         猜中后会自动出下一题；补词后若处于等待词库也会自动开局。答案只在此页显示，前台访客看不到。
+        可为每个词预先写最多 3 条提示，全服每 10 个不同猜词解锁一级。
       </p>
 
       <section className="rounded border border-slate-200 bg-white p-5">
@@ -154,6 +243,12 @@ export default function AdminSemanticGamePage() {
           </dl>
         ) : (
           <p className="mb-4 text-sm text-slate-400">暂无状态</p>
+        )}
+        {activeWord && (
+          <div className="mb-4 rounded border border-slate-100 bg-slate-50 p-3">
+            <p className="text-xs font-medium text-slate-500">当前题提示（可改）</p>
+            {hintEditor(activeWord)}
+          </div>
         )}
         <div className="flex gap-3">
           <button
@@ -190,7 +285,7 @@ export default function AdminSemanticGamePage() {
             value={batchText}
             onChange={(e) => setBatchText(e.target.value)}
             rows={6}
-            placeholder={"每行一个词\n例如：\n苹果\n月亮\n图书馆"}
+            placeholder={"每行一个词\n例如：\n苹果\n月亮\n图书馆\n（加词后再点「编辑提示」写 3 级提示）"}
             className="w-full rounded border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
           />
           <button
@@ -211,15 +306,18 @@ export default function AdminSemanticGamePage() {
           <thead>
             <tr className="border-b text-left text-slate-500">
               <th className="p-3">顺序</th>
-              <th className="p-3">词</th>
+              <th className="p-3">词 / 提示</th>
               <th className="p-3">操作</th>
             </tr>
           </thead>
           <tbody>
             {pendingWords.map((w, i) => (
-              <tr key={w.id} className="border-b">
+              <tr key={w.id} className="border-b align-top">
                 <td className="p-3 tabular-nums">{w.queueOrder}</td>
-                <td className="p-3">{w.word}</td>
+                <td className="p-3">
+                  <div className="font-medium">{w.word}</div>
+                  {hintEditor(w)}
+                </td>
                 <td className="p-3">
                   <div className="flex flex-wrap items-center gap-3">
                     <button
