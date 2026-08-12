@@ -10,6 +10,8 @@ export interface UseGameSocketOptions {
   username: string;
   fp: string;
   enabled: boolean;
+  /** Called when server confirms the bound nickname (may differ under cooldown). */
+  onIdentity?: (username: string, reusedPrior: boolean) => void;
 }
 
 export interface UseGameSocketResult {
@@ -45,6 +47,7 @@ export function useGameSocket({
   username,
   fp,
   enabled,
+  onIdentity,
 }: UseGameSocketOptions): UseGameSocketResult {
   const [status, setStatus] = useState("");
   const [top10, setTop10] = useState<Top10Entry[]>([]);
@@ -61,6 +64,8 @@ export function useGameSocket({
   const pingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const disposedRef = useRef(false);
   const celebrateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onIdentityRef = useRef(onIdentity);
+  onIdentityRef.current = onIdentity;
 
   const clearPing = () => {
     if (pingTimer.current) {
@@ -148,6 +153,13 @@ export function useGameSocket({
               typeof msg.unlockedCount === "number" ? msg.unlockedCount : 0
             );
             break;
+          case "identity": {
+            const name = (msg.username || "").trim();
+            if (name) {
+              onIdentityRef.current?.(name, Boolean(msg.reusedPrior));
+            }
+            break;
+          }
           case "guess_result": {
             const entry: GuessHistoryEntry = {
               word: msg.word,

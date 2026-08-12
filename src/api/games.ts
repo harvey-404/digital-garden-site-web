@@ -10,6 +10,13 @@ export function getSemanticStatus() {
   return apiClient.get("/games/semantic/status") as unknown as Promise<SemanticStatusVO>;
 }
 
+/** Last nickname bound to this browser fp (may be empty). */
+export function getSemanticIdentity(fp: string) {
+  return apiClient.get(`/games/semantic/identity?fp=${encodeURIComponent(fp)}`) as unknown as Promise<{
+    username: string;
+  }>;
+}
+
 export function adminGetSemanticStatus() {
   return apiClient.get("/admin/games/semantic/status") as unknown as Promise<SemanticRoundAdminVO>;
 }

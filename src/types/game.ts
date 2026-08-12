@@ -69,6 +69,7 @@ export type GameWsMessage =
     }
   | { type: "top10_update"; data: Top10Entry[] }
   | { type: "hints_update"; unlockedCount: number; hints: string[] }
+  | { type: "identity"; username: string; reusedPrior: boolean }
   | { type: "game_over"; winner: string; word: string; next: "new_round" | "waiting_words" }
   | { type: "error"; code: string; message: string }
   | { type: "pong" };

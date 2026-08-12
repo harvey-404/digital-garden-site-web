@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { getSemanticStatus } from "../api/games";
+import { getSemanticIdentity, getSemanticStatus } from "../api/games";
 import { PageHeader } from "../components/ui/PagePrimitives";
 import { useGameSocket } from "../hooks/useGameSocket";
 import { getOrCreateFp, loadUsername, saveUsername } from "../lib/gameIdentity";
@@ -97,8 +97,18 @@ export default function SemanticGamePage() {
   const [fp] = useState(() => getOrCreateFp());
   const [draftName, setDraftName] = useState(() => loadUsername());
   const [joinedName, setJoinedName] = useState<string | null>(null);
+  const [resolvingIdentity, setResolvingIdentity] = useState(true);
   const [guess, setGuess] = useState("");
   const [hubHint, setHubHint] = useState<string | null>(null);
+
+  const handleIdentity = useCallback((username: string, reusedPrior: boolean) => {
+    saveUsername(username);
+    setDraftName(username);
+    setJoinedName(username);
+    if (reusedPrior) {
+      toast("已沿用本设备原昵称", { duration: 3500 });
+    }
+  }, []);
 
   const enabled = Boolean(joinedName);
   const {
@@ -115,7 +125,41 @@ export default function SemanticGamePage() {
     username: joinedName ?? "",
     fp,
     enabled,
+    onIdentity: handleIdentity,
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    const local = loadUsername().trim();
+
+    getSemanticIdentity(fp)
+      .then((id) => {
+        if (cancelled) return;
+        const serverName = (id.username || "").trim();
+        const name = local || serverName;
+        if (name) {
+          setDraftName(name);
+          saveUsername(name);
+          setJoinedName(name);
+        } else if (local) {
+          setDraftName(local);
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // Offline / API fail — still auto-enter with local nick if present
+        if (local) {
+          setJoinedName(local);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setResolvingIdentity(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fp]);
 
   useEffect(() => {
     getSemanticStatus()
@@ -155,6 +199,10 @@ export default function SemanticGamePage() {
     setJoinedName(name);
   }
 
+  function handleChangeNick() {
+    setJoinedName(null);
+  }
+
   function handleGuess(e: FormEvent) {
     e.preventDefault();
     if (status !== "active" || !connected) return;
@@ -168,12 +216,20 @@ export default function SemanticGamePage() {
     setGuess("");
   }
 
+  if (resolvingIdentity) {
+    return (
+      <div className="mx-auto max-w-md py-16 text-center text-sm text-[var(--color-text-muted)]">
+        正在识别本设备昵称…
+      </div>
+    );
+  }
+
   if (!joinedName) {
     return (
       <div className="mx-auto max-w-md space-y-6">
         <PageHeader
           title="语义猜词"
-          description="用中文词逼近隐藏目标，与同频访客共享 Top10。目标词不会出现在前台。"
+          description="用中文词逼近隐藏目标，与同频访客共享 Top10。本设备会记住昵称，下次自动进入。"
         />
         {hubHint && (
           <p className="rounded-lg border border-[var(--color-border)] bg-[var(--color-code-bg)] px-3 py-2 text-sm text-[var(--color-text-muted)]">
@@ -230,6 +286,13 @@ export default function SemanticGamePage() {
             {joinedName}
             <span className="mx-2 opacity-40">·</span>
             {connected ? "已连接" : "重连中"}
+            <button
+              type="button"
+              onClick={handleChangeNick}
+              className="ml-3 text-[var(--color-accent)] hover:underline"
+            >
+              换昵称
+            </button>
           </p>
         </div>
         <p className="max-w-md text-right text-sm text-[var(--color-text-muted)]">
