@@ -34,6 +34,13 @@ export function adminReorderSemanticWord(id: number, queueOrder: number) {
   }) as unknown as Promise<void>;
 }
 
+export function adminUpdateSemanticWordHints(
+  id: number,
+  hints: { hint1: string; hint2: string; hint3: string }
+) {
+  return apiClient.patch(`/admin/games/semantic/words/${id}/hints`, hints) as unknown as Promise<SemanticWordVO>;
+}
+
 export function adminStartSemanticRound() {
   return apiClient.post("/admin/games/semantic/rounds/start") as unknown as Promise<SemanticRoundAdminVO>;
 }

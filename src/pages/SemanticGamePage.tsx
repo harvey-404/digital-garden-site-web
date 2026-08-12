@@ -101,7 +101,17 @@ export default function SemanticGamePage() {
   const [hubHint, setHubHint] = useState<string | null>(null);
 
   const enabled = Boolean(joinedName);
-  const { status, top10, myHistory, gameOver, error, sendGuess, connected } = useGameSocket({
+  const {
+    status,
+    top10,
+    hints,
+    hintUnlockLevel,
+    myHistory,
+    gameOver,
+    error,
+    sendGuess,
+    connected,
+  } = useGameSocket({
     username: joinedName ?? "",
     fp,
     enabled,
@@ -261,6 +271,25 @@ export default function SemanticGamePage() {
               提交
             </button>
           </form>
+
+          {(hints.length > 0 || (status === "active" && hintUnlockLevel === 0)) && (
+            <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-code-bg)] px-4 py-3">
+              <h2 className="mb-2 font-serif text-base font-semibold text-[var(--color-heading)]">
+                提示
+              </h2>
+              {hints.length === 0 ? (
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  全服累计猜出 10 / 20 / 30 个不同词后，会依次解锁最多 3 条提示。
+                </p>
+              ) : (
+                <ol className="list-decimal space-y-2 pl-5 text-sm text-[var(--color-text)]">
+                  {hints.map((h, i) => (
+                    <li key={`${i}-${h}`}>{h}</li>
+                  ))}
+                </ol>
+              )}
+            </div>
+          )}
 
           <div>
             <h2 className="mb-3 font-serif text-lg font-semibold text-[var(--color-heading)]">

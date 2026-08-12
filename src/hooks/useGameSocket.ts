@@ -15,6 +15,8 @@ export interface UseGameSocketOptions {
 export interface UseGameSocketResult {
   status: string;
   top10: Top10Entry[];
+  hints: string[];
+  hintUnlockLevel: number;
   myHistory: GuessHistoryEntry[];
   gameOver: GameOverState | null;
   error: string | null;
@@ -46,6 +48,8 @@ export function useGameSocket({
 }: UseGameSocketOptions): UseGameSocketResult {
   const [status, setStatus] = useState("");
   const [top10, setTop10] = useState<Top10Entry[]>([]);
+  const [hints, setHints] = useState<string[]>([]);
+  const [hintUnlockLevel, setHintUnlockLevel] = useState(0);
   const [myHistory, setMyHistory] = useState<GuessHistoryEntry[]>([]);
   const [gameOver, setGameOver] = useState<GameOverState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +125,12 @@ export function useGameSocket({
           case "top10_update":
             setTop10(Array.isArray(msg.data) ? msg.data : []);
             break;
+          case "hints_update":
+            setHints(Array.isArray(msg.hints) ? msg.hints : []);
+            setHintUnlockLevel(
+              typeof msg.unlockedCount === "number" ? msg.unlockedCount : 0
+            );
+            break;
           case "guess_result": {
             const entry: GuessHistoryEntry = {
               word: msg.word,
@@ -189,5 +199,15 @@ export function useGameSocket({
     ws.send(JSON.stringify({ type: "guess", word: trimmed }));
   }, []);
 
-  return { status, top10, myHistory, gameOver, error, sendGuess, connected };
+  return {
+    status,
+    top10,
+    hints,
+    hintUnlockLevel,
+    myHistory,
+    gameOver,
+    error,
+    sendGuess,
+    connected,
+  };
 }

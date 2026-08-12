@@ -30,6 +30,9 @@ export interface SemanticWordVO {
   word: string;
   queueOrder: number;
   status: string;
+  hint1?: string;
+  hint2?: string;
+  hint3?: string;
 }
 
 export type RoundStatus = "active" | "waiting_words" | "idle";
@@ -65,6 +68,7 @@ export type GameWsMessage =
       alreadyGuessed: boolean;
     }
   | { type: "top10_update"; data: Top10Entry[] }
+  | { type: "hints_update"; unlockedCount: number; hints: string[] }
   | { type: "game_over"; winner: string; word: string; next: "new_round" | "waiting_words" }
   | { type: "error"; code: string; message: string }
   | { type: "pong" };
