@@ -60,6 +60,7 @@ export function useGameSocket({
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const disposedRef = useRef(false);
+  const celebrateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearPing = () => {
     if (pingTimer.current) {
@@ -74,6 +75,26 @@ export function useGameSocket({
       reconnectTimer.current = null;
     }
   };
+
+  const clearCelebrate = () => {
+    if (celebrateTimer.current) {
+      clearTimeout(celebrateTimer.current);
+      celebrateTimer.current = null;
+    }
+  };
+
+  // Keep win banner visible briefly even though the next round is already active
+  useEffect(() => {
+    if (!gameOver || gameOver.next !== "new_round") {
+      return;
+    }
+    clearCelebrate();
+    celebrateTimer.current = setTimeout(() => {
+      setGameOver(null);
+      celebrateTimer.current = null;
+    }, 6_000);
+    return () => clearCelebrate();
+  }, [gameOver]);
 
   useEffect(() => {
     disposedRef.current = false;
@@ -117,10 +138,6 @@ export function useGameSocket({
         switch (msg.type) {
           case "round_state":
             setStatus(msg.status ?? "");
-            // New active round after win → dismiss new_round banner
-            if (msg.status === "active") {
-              setGameOver((prev) => (prev?.next === "new_round" ? null : prev));
-            }
             break;
           case "top10_update":
             setTop10(Array.isArray(msg.data) ? msg.data : []);
@@ -181,6 +198,7 @@ export function useGameSocket({
       disposedRef.current = true;
       clearReconnect();
       clearPing();
+      clearCelebrate();
       const ws = wsRef.current;
       if (ws) {
         ws.onclose = null;
