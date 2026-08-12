@@ -139,6 +139,11 @@ export default function SemanticGamePage() {
     }
   }, [error]);
 
+  useEffect(() => {
+    if (!gameOver) return;
+    toast.success(`${gameOver.winner} 猜中了「${gameOver.word}」`, { duration: 5000 });
+  }, [gameOver]);
+
   function handleJoin(e: FormEvent) {
     e.preventDefault();
     const name = draftName.trim();
@@ -235,14 +240,17 @@ export default function SemanticGamePage() {
       {gameOver && (
         <div
           role="status"
-          className="rounded-lg border border-[var(--color-accent)] bg-[var(--color-code-bg)] px-4 py-3 text-sm"
+          className="rounded-xl border-2 border-[var(--color-accent)] bg-[var(--color-code-bg)] px-5 py-4 shadow-[var(--shadow-sm)]"
         >
-          <p className="font-medium text-[var(--color-heading)]">
-            {gameOver.winner} 猜中了本轮目标词「{gameOver.word}」
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-accent)]">
+            本轮揭晓
           </p>
-          <p className="mt-1 text-[var(--color-text-muted)]">
+          <p className="mt-1 font-serif text-xl font-semibold text-[var(--color-heading)]">
+            {gameOver.winner} 猜中了「{gameOver.word}」
+          </p>
+          <p className="mt-2 text-sm text-[var(--color-text-muted)]">
             {gameOver.next === "new_round"
-              ? "新一轮即将开始，个人史已清空。"
+              ? "新一轮已开始，可继续猜；本条揭晓约 6 秒后收起。"
               : "词库已空，等待站长补词开局。"}
           </p>
         </div>
