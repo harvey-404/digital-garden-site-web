@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
+import { useLedgerAuth } from "../context/LedgerAuthContext";
 
 const links = [
   { to: "/", label: "首页", end: true },
@@ -12,6 +13,9 @@ const links = [
 ];
 
 export default function Navbar() {
+  const { isAuthenticated } = useLedgerAuth();
+  const ledgerTo = isAuthenticated ? "/ledger" : "/ledger/login";
+
   return (
     <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-nav-bg)] backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -38,6 +42,18 @@ export default function Navbar() {
                 </NavLink>
               </li>
             ))}
+            <li>
+              <NavLink
+                to={ledgerTo}
+                className={({ isActive }) =>
+                  isActive
+                    ? "font-semibold text-[var(--color-heading)]"
+                    : "text-[var(--color-text-muted)] hover:text-[var(--color-heading)]"
+                }
+              >
+                记账
+              </NavLink>
+            </li>
           </ul>
           <ThemeToggle />
         </div>
