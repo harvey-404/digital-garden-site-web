@@ -156,7 +156,7 @@ export default function LedgerDashboardPage() {
                   <BudgetRing rate={0} overBudget={false} activated={false} />
                   <div className="min-w-0 flex-1 space-y-1">
                     <p className="text-xs text-[var(--color-text-muted)]">本月尚未启用</p>
-                    <p className="font-serif text-xl font-semibold text-[var(--color-heading)]">
+                    <p className="text-xl font-semibold tabular-nums text-[var(--color-heading)]">
                       参考 ¥{formatYuan(dashboard.defaultBudgetAmount)}
                     </p>
                     <p className="text-sm text-[var(--color-text-muted)]">
@@ -194,7 +194,7 @@ export default function LedgerDashboardPage() {
                     {overBudget ? "已超支" : "剩余"}
                   </p>
                   <p
-                    className={`font-serif text-3xl font-semibold tracking-tight ${
+                    className={`text-3xl font-semibold tracking-tight tabular-nums ${
                       overBudget ? "text-red-600" : "text-[var(--color-heading)]"
                     }`}
                   >
