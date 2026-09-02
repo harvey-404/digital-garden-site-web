@@ -8,7 +8,7 @@ import {
   updateLedgerExpense,
 } from "../../api/ledger";
 import ExpenseForm, { formatYuan } from "../../components/ledger/ExpenseForm";
-import MonthPicker, { useLedgerMonth } from "../../components/ledger/MonthPicker";
+import { useLedgerMonth } from "../../components/ledger/MonthPicker";
 import Spinner from "../../components/Spinner";
 import { EmptyState, PageHeader } from "../../components/ui/PagePrimitives";
 import type {
@@ -38,7 +38,7 @@ function formatTime(epochSec: number): string {
 }
 
 export default function LedgerExpensesPage() {
-  const [month, setMonth] = useLedgerMonth();
+  const [month] = useLedgerMonth();
   const [expenses, setExpenses] = useState<LedgerExpenseVO[]>([]);
   const [categories, setCategories] = useState<LedgerCategoryVO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,10 +121,7 @@ export default function LedgerExpensesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <PageHeader title="明细" description="按日记账明细；筛选月份与概览共用。" />
-        <MonthPicker value={month} onChange={setMonth} />
-      </div>
+      <PageHeader title="明细" description="按日记账明细；月份与概览共用顶部月份条。" />
 
       {mode === "list" && (
         <div className="flex flex-wrap items-center justify-between gap-3">
