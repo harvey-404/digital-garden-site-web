@@ -175,8 +175,8 @@ export default function LedgerDashboardPage() {
     dashboard != null && dashboard.budgetActivated && dashboard.rate > 1;
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="概览" />
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader title="概览" compact />
 
       {loading && <Spinner />}
 
@@ -184,10 +184,10 @@ export default function LedgerDashboardPage() {
 
       {!loading && dashboard && (
         <>
-          <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-sm)] sm:p-6">
+          <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)] sm:p-6">
             {!dashboard.budgetActivated ? (
               <div className="space-y-4">
-                <div className="flex gap-4 items-start">
+                <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:items-start sm:text-left">
                   <BudgetRing rate={0} overBudget={false} activated={false} />
                   <div className="min-w-0 flex-1 space-y-1">
                     <p className="text-xs text-[var(--color-text-muted)]">本月尚未启用</p>
@@ -204,21 +204,21 @@ export default function LedgerDashboardPage() {
                     type="button"
                     disabled={activating}
                     onClick={() => void handleActivate()}
-                    className="rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)] disabled:opacity-50"
+                    className="w-full rounded-lg bg-[var(--color-accent)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--color-accent-hover)] disabled:opacity-50 sm:w-auto"
                   >
                     {activating ? "启用中…" : "启用本月预算"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowQuickAdd(true)}
-                    className="rounded-lg border border-[var(--color-accent)]/40 px-4 py-2.5 text-sm font-medium text-[var(--color-accent)] transition hover:bg-[var(--color-code-bg)]"
+                    className="w-full rounded-lg border border-[var(--color-accent)]/40 px-4 py-2.5 text-sm font-medium text-[var(--color-accent)] transition hover:bg-[var(--color-code-bg)] sm:w-auto"
                   >
                     先记一笔
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-center sm:text-left">
                 <BudgetRing
                   rate={dashboard.rate}
                   overBudget={overBudget}
@@ -229,14 +229,14 @@ export default function LedgerDashboardPage() {
                     {overBudget ? "已超支" : "剩余"}
                   </p>
                   <p
-                    className={`text-3xl font-semibold tracking-tight tabular-nums ${
+                    className={`text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl ${
                       overBudget ? "text-red-600" : "text-[var(--color-heading)]"
                     }`}
                   >
                     {overBudget ? "−" : ""}¥
                     {formatYuan(Math.abs(dashboard.remaining))}
                   </p>
-                  <p className="text-sm text-[var(--color-text-muted)]">
+                  <p className="text-xs text-[var(--color-text-muted)] sm:text-sm">
                     已花 ¥{formatYuan(dashboard.spent)} / ¥
                     {formatYuan(dashboard.budgetAmount ?? 0)}
                     {dashboard.spent === 0 ? " · 暂无消费" : ""}
@@ -246,7 +246,7 @@ export default function LedgerDashboardPage() {
                   <button
                     type="button"
                     onClick={() => setShowQuickAdd(true)}
-                    className="shrink-0 self-start rounded-lg border border-[var(--color-accent)]/40 px-3 py-2 text-sm font-medium text-[var(--color-accent)] transition hover:bg-[var(--color-code-bg)] sm:self-center"
+                    className="w-full shrink-0 rounded-lg border border-[var(--color-accent)]/40 px-3 py-2.5 text-sm font-medium text-[var(--color-accent)] transition hover:bg-[var(--color-code-bg)] sm:w-auto sm:self-center"
                   >
                     记一笔
                   </button>
@@ -266,7 +266,7 @@ export default function LedgerDashboardPage() {
             )}
           </section>
 
-          <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 md:items-stretch">
             <CategoryPieCard items={dashboard.categoryBreakdown} />
             <ExpenseWordCloudCard
               expenses={expenses}
@@ -274,9 +274,9 @@ export default function LedgerDashboardPage() {
             />
           </div>
 
-          <section className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-sm)]">
+          <section className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)] sm:space-y-4 sm:p-6">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="font-serif text-lg font-semibold text-[var(--color-heading)]">
+              <h2 className="font-serif text-base font-semibold text-[var(--color-heading)] sm:text-lg">
                 最近记账
               </h2>
               <Link

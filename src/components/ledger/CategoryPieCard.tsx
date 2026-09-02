@@ -41,23 +41,23 @@ export default function CategoryPieCard({
   const gradient = buildConicGradient(items);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-sm)]">
-      <h2 className="font-serif text-lg font-semibold text-[var(--color-heading)]">
+    <div className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)] sm:p-5">
+      <h2 className="font-serif text-base font-semibold text-[var(--color-heading)] sm:text-lg">
         分类占比
       </h2>
       {items.length === 0 ? (
-        <p className="mt-6 text-center text-sm text-[var(--color-text-muted)]">
+        <p className="mt-4 text-center text-sm text-[var(--color-text-muted)] sm:mt-6">
           暂无消费
         </p>
       ) : (
-        <div className="mt-4 flex flex-1 flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="mt-3 flex flex-1 flex-col gap-3 sm:mt-4 sm:flex-row sm:items-center sm:gap-4">
           <div
-            className="mx-auto h-28 w-28 shrink-0 rounded-full sm:mx-0"
+            className="mx-auto h-24 w-24 shrink-0 rounded-full sm:mx-0 sm:h-28 sm:w-28"
             style={{ background: gradient }}
             role="img"
             aria-label="分类占比饼图"
           />
-          <ul className="min-w-0 flex-1 space-y-2">
+          <ul className="min-w-0 flex-1 space-y-1.5 sm:max-h-48 sm:space-y-2 sm:overflow-y-auto">
             {items.map((item, i) => {
               const pct = Math.min(100, Math.max(0, item.rate * 100));
               return (

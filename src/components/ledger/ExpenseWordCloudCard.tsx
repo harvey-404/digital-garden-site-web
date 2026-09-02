@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LedgerExpenseVO } from "../../types/ledger";
 
 export type WordCloudToken = { text: string; weight: number };
@@ -49,27 +49,40 @@ export default function ExpenseWordCloudCard({
   expenses: LedgerExpenseVO[];
   categoryName: (categoryId: number) => string;
 }) {
+  const [narrow, setNarrow] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const sync = () => setNarrow(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
   const tokens = useMemo(
     () => buildWordCloudTokens(expenses, categoryName),
     [expenses, categoryName],
   );
 
   const maxW = tokens[0]?.weight ?? 1;
+  const visible = narrow ? tokens.slice(0, 18) : tokens.slice(0, 30);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-sm)]">
-      <h2 className="font-serif text-lg font-semibold text-[var(--color-heading)]">
+    <div className="flex h-full flex-col rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)] sm:p-5">
+      <h2 className="font-serif text-base font-semibold text-[var(--color-heading)] sm:text-lg">
         词云
       </h2>
-      {tokens.length === 0 ? (
-        <p className="mt-6 text-center text-sm text-[var(--color-text-muted)]">
+      {visible.length === 0 ? (
+        <p className="mt-4 text-center text-sm text-[var(--color-text-muted)] sm:mt-6">
           暂无消费
         </p>
       ) : (
-        <div className="relative mt-3 flex min-h-[10rem] flex-1 flex-wrap content-center items-center justify-center gap-x-3 gap-y-2 overflow-hidden rounded-xl bg-[var(--color-code-bg)]/40 px-3 py-4">
-          {tokens.map((t, i) => {
+        <div className="relative mt-3 flex min-h-[8rem] flex-1 flex-wrap content-center items-center justify-center gap-x-2 gap-y-1.5 overflow-hidden rounded-xl bg-[var(--color-code-bg)]/40 px-2 py-3 sm:min-h-[10rem] sm:gap-x-3 sm:gap-y-2 sm:px-3 sm:py-4">
+          {visible.map((t, i) => {
             const ratio = t.weight / maxW;
-            const fontSize = 0.75 + ratio * 1.15; // rem
+            const fontSize = narrow
+              ? 0.65 + ratio * 0.75
+              : 0.75 + ratio * 1.15;
             const opacity = 0.55 + ratio * 0.45;
             const rot = ROTATIONS[i % ROTATIONS.length]!;
             return (

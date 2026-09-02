@@ -1,10 +1,25 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-export function PageHeader({ title, description }: { title: string; description?: string }) {
+export function PageHeader({
+  title,
+  description,
+  compact,
+}: {
+  title: string;
+  description?: string;
+  /** Tighter spacing on small screens (ledger dashboard). */
+  compact?: boolean;
+}) {
   return (
-    <header className="mb-8 border-b border-[var(--color-border)] pb-6">
-      <h1 className="font-serif text-[clamp(1.75rem,4vw,2.25rem)] font-semibold tracking-tight text-[var(--color-heading)]">
+    <header
+      className={
+        compact
+          ? "mb-4 border-b border-[var(--color-border)] pb-4 sm:mb-6 sm:pb-6"
+          : "mb-8 border-b border-[var(--color-border)] pb-6"
+      }
+    >
+      <h1 className="font-serif text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-tight text-[var(--color-heading)]">
         {title}
       </h1>
       {description && (
