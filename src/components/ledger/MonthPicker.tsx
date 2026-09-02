@@ -70,13 +70,64 @@ export function useLedgerMonth(): [string, (month: string) => void] {
   return [month, setMonth];
 }
 
+export function formatMonthLabel(yyyyMm: string): string {
+  const [y, m] = yyyyMm.split("-").map(Number);
+  if (!y || !m) return yyyyMm;
+  return `${y}年${m}月`;
+}
+
 export default function MonthPicker({
   value,
   onChange,
+  variant = "default",
 }: {
   value: string;
   onChange: (month: string) => void;
+  /** `bar` — shell 常驻条：‹ 中文月 › 本月 */
+  variant?: "default" | "bar";
 }) {
+  if (variant === "bar") {
+    return (
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+        <button
+          type="button"
+          className={btnClass}
+          onClick={() => onChange(shiftMonth(value, -1))}
+          aria-label="上一月"
+        >
+          ‹
+        </button>
+        <span className="min-w-[6.5rem] text-center text-sm font-semibold text-[var(--color-heading)]">
+          {formatMonthLabel(value)}
+        </span>
+        <button
+          type="button"
+          className={btnClass}
+          onClick={() => onChange(shiftMonth(value, 1))}
+          aria-label="下一月"
+        >
+          ›
+        </button>
+        <button
+          type="button"
+          className={btnClass}
+          onClick={() => onChange(currentMonthShanghai())}
+        >
+          本月
+        </button>
+        <input
+          type="month"
+          value={value}
+          onChange={(e) => {
+            if (e.target.value) onChange(e.target.value);
+          }}
+          className={`${inputClass} max-w-[9.5rem]`}
+          aria-label="选择月份"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button type="button" className={btnClass} onClick={() => onChange(shiftMonth(value, -1))} aria-label="上一月">
