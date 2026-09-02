@@ -30,17 +30,17 @@ export function CategoryPodium({
   const heights = ["h-16", "h-24", "h-12"]; // for slots silver, gold, bronze visual bars
 
   return (
-    <section className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-sm)]">
-      <h2 className="font-serif text-lg font-semibold text-[var(--color-heading)]">
+    <section className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-sm)] sm:space-y-4 sm:p-6">
+      <h2 className="font-serif text-base font-semibold text-[var(--color-heading)] sm:text-lg">
         本月排行
       </h2>
 
       {top3.length === 0 ? (
-        <p className="py-6 text-center text-sm text-[var(--color-text-muted)]">
+        <p className="py-4 text-center text-sm text-[var(--color-text-muted)] sm:py-6">
           暂无消费
         </p>
       ) : (
-        <div className="grid grid-cols-3 items-end gap-2 sm:gap-4">
+        <div className="grid grid-cols-3 items-end gap-1 sm:gap-4">
           {PODIUM_SLOTS.map((rankIdx, slot) => {
             const row = top3[rankIdx];
             const medal = MEDALS[rankIdx];
@@ -48,21 +48,24 @@ export function CategoryPodium({
               return <div key={slot} />;
             }
             return (
-              <div key={row.categoryId} className="flex flex-col items-center text-center">
-                <span className="text-2xl sm:text-3xl" aria-label={medal.label}>
+              <div key={row.categoryId} className="flex min-w-0 flex-col items-center text-center">
+                <span className="text-xl sm:text-3xl" aria-label={medal.label}>
                   {medal.emoji}
                 </span>
-                <p className="mt-1 line-clamp-2 text-xs font-semibold text-[var(--color-heading)] sm:text-sm">
+                <p className="mt-1 line-clamp-2 w-full px-0.5 text-[11px] font-semibold leading-tight text-[var(--color-heading)] sm:text-sm">
                   {row.categoryName}
                 </p>
-                <p className="mt-0.5 tabular-nums text-sm font-bold text-[var(--color-accent)] sm:text-base">
+                <p className="mt-0.5 max-w-full truncate tabular-nums text-xs font-bold text-[var(--color-accent)] sm:text-base">
                   ¥{formatYuan(row.amount)}
                 </p>
                 <p className="text-[10px] text-[var(--color-text-muted)] sm:text-xs">
-                  {row.count} 次 · {medal.label}
+                  <span className="sm:hidden">{row.count} 次</span>
+                  <span className="hidden sm:inline">
+                    {row.count} 次 · {medal.label}
+                  </span>
                 </p>
                 <div
-                  className={`mt-2 w-full max-w-[5.5rem] rounded-t-lg ${heights[slot]}`}
+                  className={`mt-1.5 w-full max-w-[4rem] rounded-t-lg sm:mt-2 sm:max-w-[5.5rem] ${heights[slot]}`}
                   style={{
                     background: pieColorAt(rankIdx),
                     opacity: 0.35 + (2 - rankIdx) * 0.2,
@@ -116,7 +119,7 @@ export function RankingDrawer({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-stretch sm:justify-end">
       <button
         type="button"
         className="absolute inset-0 bg-black/40"
@@ -124,11 +127,12 @@ export function RankingDrawer({
         onClick={onClose}
       />
       <aside
-        className="relative flex h-full w-full max-w-md flex-col bg-[var(--color-bg)] shadow-xl"
+        className="relative flex max-h-[88vh] w-full flex-col rounded-t-2xl bg-[var(--color-bg)] shadow-xl sm:h-full sm:max-h-none sm:max-w-md sm:rounded-none"
         role="dialog"
         aria-modal
         aria-labelledby="ranking-drawer-title"
       >
+        <div className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-[var(--color-border)] sm:hidden" />
         <div className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3">
           <div>
             <h2

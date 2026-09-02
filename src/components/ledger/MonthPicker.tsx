@@ -88,40 +88,42 @@ export default function MonthPicker({
 }) {
   if (variant === "bar") {
     return (
-      <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
-        <button
-          type="button"
-          className={btnClass}
-          onClick={() => onChange(shiftMonth(value, -1))}
-          aria-label="上一月"
-        >
-          ‹
-        </button>
-        <span className="min-w-[6.5rem] text-center text-sm font-semibold text-[var(--color-heading)]">
-          {formatMonthLabel(value)}
-        </span>
-        <button
-          type="button"
-          className={btnClass}
-          onClick={() => onChange(shiftMonth(value, 1))}
-          aria-label="下一月"
-        >
-          ›
-        </button>
-        <button
-          type="button"
-          className={btnClass}
-          onClick={() => onChange(currentMonthShanghai())}
-        >
-          本月
-        </button>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-2">
+        <div className="flex items-center justify-center gap-1 sm:gap-2">
+          <button
+            type="button"
+            className={`${btnClass} min-h-10 min-w-10 px-3`}
+            onClick={() => onChange(shiftMonth(value, -1))}
+            aria-label="上一月"
+          >
+            ‹
+          </button>
+          <span className="min-w-[5.5rem] flex-1 text-center text-sm font-semibold text-[var(--color-heading)] sm:min-w-[6.5rem] sm:flex-none">
+            {formatMonthLabel(value)}
+          </span>
+          <button
+            type="button"
+            className={`${btnClass} min-h-10 min-w-10 px-3`}
+            onClick={() => onChange(shiftMonth(value, 1))}
+            aria-label="下一月"
+          >
+            ›
+          </button>
+          <button
+            type="button"
+            className={`${btnClass} min-h-10 shrink-0 px-3`}
+            onClick={() => onChange(currentMonthShanghai())}
+          >
+            本月
+          </button>
+        </div>
         <input
           type="month"
           value={value}
           onChange={(e) => {
             if (e.target.value) onChange(e.target.value);
           }}
-          className={`${inputClass} max-w-[9.5rem]`}
+          className={`${inputClass} w-full min-h-10 sm:max-w-[9.5rem] sm:flex-1`}
           aria-label="选择月份"
         />
       </div>
