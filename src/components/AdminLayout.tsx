@@ -8,6 +8,7 @@ const adminLinks = [
   { to: "/admin/album", label: "足迹管理" },
   { to: "/admin/projects", label: "成果" },
   { to: "/admin/games/semantic", label: "语义猜词" },
+  { to: "/admin/ledger/users", label: "账本用户" },
   { to: "/admin/comments", label: "评论审核" },
   { to: "/admin/profile", label: "关于我" },
 ];
