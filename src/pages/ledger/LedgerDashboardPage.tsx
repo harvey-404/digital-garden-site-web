@@ -8,8 +8,15 @@ import {
   listLedgerCategories,
   listLedgerExpenses,
 } from "../../api/ledger";
+import CategoryPieCard from "../../components/ledger/CategoryPieCard";
+import {
+  CategoryPodium,
+  RankingDrawer,
+  type RankRow,
+} from "../../components/ledger/CategoryRanking";
 import ExpenseForm, { formatYuan } from "../../components/ledger/ExpenseForm";
-import { useLedgerMonth } from "../../components/ledger/MonthPicker";
+import ExpenseWordCloudCard from "../../components/ledger/ExpenseWordCloudCard";
+import { formatMonthLabel, useLedgerMonth } from "../../components/ledger/MonthPicker";
 import Spinner from "../../components/Spinner";
 import { EmptyState, PageHeader } from "../../components/ui/PagePrimitives";
 import type {
@@ -80,10 +87,11 @@ export default function LedgerDashboardPage() {
   const [month] = useLedgerMonth();
   const [dashboard, setDashboard] = useState<LedgerDashboardVO | null>(null);
   const [categories, setCategories] = useState<LedgerCategoryVO[]>([]);
-  const [recent, setRecent] = useState<LedgerExpenseVO[]>([]);
+  const [expenses, setExpenses] = useState<LedgerExpenseVO[]>([]);
   const [loading, setLoading] = useState(true);
   const [activating, setActivating] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [rankingOpen, setRankingOpen] = useState(false);
 
   const categoryMap = useMemo(() => {
     const m = new Map<number, string>();
@@ -91,22 +99,49 @@ export default function LedgerDashboardPage() {
     return m;
   }, [categories]);
 
+  const categoryName = useCallback(
+    (id: number) => categoryMap.get(id) ?? "未分类",
+    [categoryMap],
+  );
+
+  const recent = useMemo(() => {
+    return [...expenses]
+      .sort((a, b) => b.recordedAt - a.recordedAt)
+      .slice(0, RECENT_LIMIT);
+  }, [expenses]);
+
+  const ranks: RankRow[] = useMemo(() => {
+    if (!dashboard) return [];
+    const counts = new Map<number, number>();
+    for (const e of expenses) {
+      counts.set(e.categoryId, (counts.get(e.categoryId) ?? 0) + 1);
+    }
+    return [...dashboard.categoryBreakdown]
+      .map((item) => ({
+        categoryId: item.categoryId,
+        categoryName: item.categoryName,
+        amount: item.amount,
+        rate: item.rate,
+        count: counts.get(item.categoryId) ?? 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [dashboard, expenses]);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [dash, cats, expenses] = await Promise.all([
+      const [dash, cats, list] = await Promise.all([
         getLedgerDashboard(month),
         listLedgerCategories(),
         listLedgerExpenses(month),
       ]);
       setDashboard(dash);
       setCategories(cats);
-      const sorted = [...expenses].sort((a, b) => b.recordedAt - a.recordedAt);
-      setRecent(sorted.slice(0, RECENT_LIMIT));
+      setExpenses(list);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "加载失败");
       setDashboard(null);
-      setRecent([]);
+      setExpenses([]);
     } finally {
       setLoading(false);
     }
@@ -141,7 +176,7 @@ export default function LedgerDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="概览" description="一眼看清本月预算与花销结构。" />
+      <PageHeader title="概览" />
 
       {loading && <Spinner />}
 
@@ -231,53 +266,13 @@ export default function LedgerDashboardPage() {
             )}
           </section>
 
-          <section className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-sm)]">
-            <h2 className="font-serif text-lg font-semibold text-[var(--color-heading)]">
-              分类占比
-            </h2>
-            {dashboard.categoryBreakdown.length === 0 ? (
-              <div className="space-y-2 text-center">
-                <EmptyState>
-                  {dashboard.budgetActivated && dashboard.spent === 0
-                    ? "暂无消费"
-                    : "本月还没有分类消费"}
-                </EmptyState>
-                {!showQuickAdd && (
-                  <button
-                    type="button"
-                    onClick={() => setShowQuickAdd(true)}
-                    className="text-sm text-[var(--color-accent)] underline-offset-2 hover:underline"
-                  >
-                    记一笔
-                  </button>
-                )}
-              </div>
-            ) : (
-              <ul className="space-y-3">
-                {dashboard.categoryBreakdown.map((item) => {
-                  const pct = Math.min(100, Math.max(0, item.rate * 100));
-                  return (
-                    <li key={item.categoryId} className="space-y-1.5">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-[var(--color-heading)]">
-                          {item.categoryName}
-                        </span>
-                        <span className="text-[var(--color-text-muted)]">
-                          ¥{formatYuan(item.amount)} · {pct.toFixed(1)}%
-                        </span>
-                      </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-code-bg)]">
-                        <div
-                          className="h-full rounded-full bg-[var(--color-accent)]/80"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
+          <div className="grid gap-4 md:grid-cols-2 md:items-stretch">
+            <CategoryPieCard items={dashboard.categoryBreakdown} />
+            <ExpenseWordCloudCard
+              expenses={expenses}
+              categoryName={categoryName}
+            />
+          </div>
 
           <section className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-sm)]">
             <div className="flex items-center justify-between gap-2">
@@ -310,7 +305,7 @@ export default function LedgerDashboardPage() {
                         {categoryMap.get(e.categoryId) ?? "未分类"}
                       </p>
                     </div>
-                    <span className="shrink-0 font-medium text-[var(--color-heading)]">
+                    <span className="shrink-0 font-medium tabular-nums text-[var(--color-heading)]">
                       ¥{formatYuan(e.amount)}
                     </span>
                   </li>
@@ -318,6 +313,18 @@ export default function LedgerDashboardPage() {
               </ul>
             )}
           </section>
+
+          <CategoryPodium
+            ranks={ranks}
+            onOpenFull={() => setRankingOpen(true)}
+          />
+
+          <RankingDrawer
+            open={rankingOpen}
+            onClose={() => setRankingOpen(false)}
+            ranks={ranks}
+            monthLabel={formatMonthLabel(month)}
+          />
         </>
       )}
     </div>
