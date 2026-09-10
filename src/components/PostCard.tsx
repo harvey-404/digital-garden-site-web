@@ -6,7 +6,7 @@ export default function PostCard({ post }: { post: PostVO }) {
   return (
     <Link
       to={`/posts/${post.slug}`}
-      className="group block rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:border-[var(--color-accent)]"
+      className="dg-card-glass group block rounded-xl p-5"
     >
       <h3 className="font-serif text-lg font-semibold text-[var(--color-heading)] transition group-hover:text-[var(--color-accent)]">
         {post.title}
