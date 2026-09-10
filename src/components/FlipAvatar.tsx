@@ -16,7 +16,7 @@ export default function FlipAvatar({ initial, portraitUrl, name }: FlipAvatarPro
     <button
       type="button"
       className={`dg-flip mx-auto${flipped ? " is-flipped" : ""}`}
-      aria-label={`${name} 的头像，悬停或点击翻转`}
+      aria-label={`${name} 的头像`}
       aria-pressed={flipped}
       onClick={() => {
         if (window.matchMedia("(hover: hover)").matches) return;
