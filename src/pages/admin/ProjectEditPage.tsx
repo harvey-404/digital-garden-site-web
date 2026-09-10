@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { listProjects, createProject, updateProject } from "../../api/projects";
+import { getProject, createProject, updateProject } from "../../api/projects";
 import { uploadImage } from "../../api/upload";
 import type { ProjectRequest } from "../../types";
 
@@ -17,19 +17,19 @@ export default function ProjectEditPage() {
 
   useEffect(() => {
     if (!id) return;
-    listProjects().then((all) => {
-      const target = all.find((p) => p.id === Number(id));
-      if (!target) { toast.error("成果不存在"); return; }
-      setForm({
-        title: target.title,
-        description: target.description ?? "",
-        coverImage: target.coverImage ?? "",
-        projectUrl: target.projectUrl ?? "",
-        repoUrl: target.repoUrl ?? "",
-        techStack: target.techStack ?? "",
-        sortOrder: target.sortOrder,
-      });
-    });
+    getProject(Number(id))
+      .then((target) => {
+        setForm({
+          title: target.title,
+          description: target.description ?? "",
+          coverImage: target.coverImage ?? "",
+          projectUrl: target.projectUrl ?? "",
+          repoUrl: target.repoUrl ?? "",
+          techStack: target.techStack ?? "",
+          sortOrder: target.sortOrder,
+        });
+      })
+      .catch(() => toast.error("成果不存在"));
   }, [id]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,9 +57,9 @@ export default function ProjectEditPage() {
     <div className="max-w-xl space-y-4">
       <h1 className="text-2xl font-bold">{id ? "编辑成果" : "新建成果"}</h1>
       <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="项目名" className="w-full rounded border px-3 py-2" />
-      <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="描述" rows={4} className="w-full rounded border px-3 py-2" />
+      <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="项目总结（支持 Markdown，详情页展示）" rows={16} className="w-full rounded border px-3 py-2 font-mono text-sm" />
       <input value={form.techStack} onChange={(e) => setForm({ ...form, techStack: e.target.value })} placeholder="技术栈（如 React, Java）" className="w-full rounded border px-3 py-2" />
-      <input value={form.projectUrl} onChange={(e) => setForm({ ...form, projectUrl: e.target.value })} placeholder="演示地址" className="w-full rounded border px-3 py-2" />
+      <input value={form.projectUrl} onChange={(e) => setForm({ ...form, projectUrl: e.target.value })} placeholder="成品链接（如 /diet/ 或 https://…）" className="w-full rounded border px-3 py-2" />
       <input value={form.repoUrl} onChange={(e) => setForm({ ...form, repoUrl: e.target.value })} placeholder="源码地址" className="w-full rounded border px-3 py-2" />
       <input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })} placeholder="排序（越小越靠前）" className="w-full rounded border px-3 py-2" />
       <div className="flex items-center gap-3">

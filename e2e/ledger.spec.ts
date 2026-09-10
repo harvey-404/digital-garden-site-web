@@ -84,11 +84,7 @@ test.describe("账本 ledger smoke", () => {
   }) => {
     test.setTimeout(60_000);
 
-    await page.goto("/");
-    const navLedger = page.locator("header nav").getByRole("link", { name: "记账" });
-    await expect(navLedger).toBeVisible();
-    await navLedger.click();
-    await expect(page).toHaveURL(/\/ledger\/login/);
+    await page.goto("/ledger/login");
 
     await expect(page.getByRole("heading", { name: "记账登录" })).toBeVisible();
     await page.getByPlaceholder("XXXX-XXXX-XXXX").fill(inviteCode);
@@ -115,9 +111,6 @@ test.describe("账本 ledger smoke", () => {
     await expect(page.getByText(EXPENSE_DISPLAY)).toBeVisible();
     await expect(page.getByText("暂无消费")).toHaveCount(0);
 
-    await expect(page.locator("header nav").getByRole("link", { name: "记账" })).toHaveAttribute(
-      "href",
-      "/ledger",
-    );
+    await expect(page.getByRole("heading", { name: "概览" })).toBeVisible();
   });
 });

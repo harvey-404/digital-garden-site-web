@@ -92,7 +92,7 @@ export default function HomePage() {
 
       <section>
         <SectionHeader title="精选成果" to="/projects" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4">
           {projects.map((p) => (
             <ProjectCard key={p.id} project={p} />
           ))}

@@ -12,6 +12,7 @@ import HomePage from "./pages/HomePage";
 import PostListPage from "./pages/PostListPage";
 import PostDetailPage from "./pages/PostDetailPage";
 import ProjectListPage from "./pages/ProjectListPage";
+import ProjectDetailPage from "./pages/ProjectDetailPage";
 import TodoListPage from "./pages/TodoListPage";
 import TodoDetailPage from "./pages/TodoDetailPage";
 import AboutPage from "./pages/AboutPage";
@@ -53,6 +54,7 @@ export default function App() {
               <Route path="posts" element={<PostListPage />} />
               <Route path="posts/:slug" element={<PostDetailPage />} />
               <Route path="projects" element={<ProjectListPage />} />
+              <Route path="projects/:id" element={<ProjectDetailPage />} />
               <Route path="todos" element={<TodoListPage />} />
               <Route path="todos/:slug" element={<TodoDetailPage />} />
               <Route path="about" element={<AboutPage />} />
