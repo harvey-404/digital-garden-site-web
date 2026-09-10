@@ -1,12 +1,7 @@
-interface StatusPulseProps {
-  label?: string;
-}
-
-export default function StatusPulse({ label = "system online" }: StatusPulseProps) {
+export default function StatusPulse() {
   return (
-    <span className="dg-status" title="garden kernel ready">
+    <span className="dg-status" aria-label="在线">
       <span className="dg-status__dot" aria-hidden="true" />
-      <span>{label}</span>
     </span>
   );
 }

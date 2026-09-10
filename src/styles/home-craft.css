@@ -72,17 +72,12 @@
 .dg-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: lowercase;
-  color: var(--color-text-muted);
+  line-height: 1;
 }
 
 .dg-status__dot {
-  width: 0.48rem;
-  height: 0.48rem;
+  width: 0.58rem;
+  height: 0.58rem;
   border-radius: 999px;
   background: #3d9a6a;
   box-shadow: 0 0 0 0 rgb(61 154 106 / 45%);
@@ -181,88 +176,84 @@
     0 14px 32px color-mix(in srgb, var(--color-accent) 14%, transparent);
 }
 
-.dg-theme-switch {
-  --dg-switch-w: 3.15rem;
-  --dg-switch-h: 1.7rem;
-  width: var(--dg-switch-w);
-  height: var(--dg-switch-h);
+.dg-bulb {
+  width: 2.15rem;
+  height: 2.15rem;
+  display: grid;
+  place-items: center;
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: #d8cfc2;
-  box-shadow: inset 0 1px 3px rgb(45 38 64 / 16%);
-  position: relative;
+  background: transparent;
   cursor: pointer;
-  overflow: hidden;
-  transition: background 0.45s ease;
+  color: #9a93a8;
+  transition:
+    transform 0.2s ease,
+    color 0.28s ease,
+    filter 0.28s ease;
 }
 
-.dg-theme-switch[data-mode="dark"] {
-  background: #2a2438;
+.dg-bulb:hover {
+  transform: scale(1.08);
 }
 
-.dg-theme-switch:focus-visible {
+.dg-bulb:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
 }
 
-.dg-theme-switch__sky {
-  position: absolute;
-  inset: 0;
+.dg-bulb__icon {
+  width: 1.42rem;
+  height: 1.42rem;
+  overflow: visible;
 }
 
-.dg-theme-switch__sun,
-.dg-theme-switch__moon {
-  position: absolute;
-  top: 50%;
-  width: 0.92rem;
-  height: 0.92rem;
-  border-radius: 999px;
-  transition:
-    transform 0.45s cubic-bezier(0.22, 0.8, 0.2, 1),
-    opacity 0.35s ease;
+.dg-bulb__glass,
+.dg-bulb__filament,
+.dg-bulb__base,
+.dg-bulb__rays path {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.dg-theme-switch__sun {
-  left: 0.28rem;
-  background: #f4c56a;
-  box-shadow: 0 0 10px rgb(244 197 106 / 55%);
-  transform: translateY(-50%);
+.dg-bulb__glass {
+  stroke-width: 1.5;
+  transition: fill 0.28s ease, stroke 0.28s ease;
 }
 
-.dg-theme-switch__moon {
-  right: 0.28rem;
-  background: #e8e4f0;
-  box-shadow: inset -3px -1px 0 #9aa0c4;
-  opacity: 0.35;
-  transform: translateY(140%);
+.dg-bulb__filament,
+.dg-bulb__base,
+.dg-bulb__rays path {
+  stroke-width: 1.35;
 }
 
-.dg-theme-switch[data-mode="dark"] .dg-theme-switch__sun {
-  transform: translateY(140%);
-  opacity: 0.2;
+.dg-bulb__rays {
+  opacity: 0;
+  transition: opacity 0.28s ease;
 }
 
-.dg-theme-switch[data-mode="dark"] .dg-theme-switch__moon {
+.dg-bulb[data-mode="light"] {
+  color: #c99418;
+  filter: drop-shadow(0 0 7px rgb(244 197 106 / 62%));
+}
+
+.dg-bulb[data-mode="light"] .dg-bulb__glass {
+  fill: #f6d56a;
+  stroke: #d4a017;
+}
+
+.dg-bulb[data-mode="light"] .dg-bulb__filament {
+  stroke: #b57a10;
+}
+
+.dg-bulb[data-mode="light"] .dg-bulb__rays {
   opacity: 1;
-  transform: translateY(-50%);
 }
 
-.dg-theme-switch__knob {
-  position: absolute;
-  top: 0.18rem;
-  left: 0.18rem;
-  width: 1.34rem;
-  height: 1.34rem;
-  border-radius: 999px;
-  background: #fffaf3;
-  box-shadow: 0 2px 6px rgb(45 38 64 / 18%);
-  transition: transform 0.45s cubic-bezier(0.22, 0.8, 0.2, 1);
-}
-
-.dg-theme-switch[data-mode="dark"] .dg-theme-switch__knob {
-  transform: translateX(1.45rem);
-  background: #c4b5fd;
+.dg-bulb[data-mode="dark"] {
+  color: #b8b0c8;
 }
 
 @keyframes dg-pulse {
@@ -290,10 +281,9 @@
   .dg-flip__inner,
   .dg-btn,
   .dg-card-glass,
-  .dg-theme-switch,
-  .dg-theme-switch__sun,
-  .dg-theme-switch__moon,
-  .dg-theme-switch__knob {
+  .dg-bulb,
+  .dg-bulb__glass,
+  .dg-bulb__rays {
     transition: none;
   }
 

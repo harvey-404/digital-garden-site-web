@@ -47,14 +47,11 @@ export default function HomePage() {
             name={name}
             portraitUrl={profile?.avatarUrl}
           />
-          <p className="mt-2 text-[0.7rem] tracking-wide text-[var(--color-text-muted)]">
-            悬停或点按，看另一面
-          </p>
-          <div className="mt-4 flex flex-col items-center gap-2">
+          <div className="mt-5 flex items-center justify-center gap-2.5">
             <h1 className="font-serif text-[clamp(2rem,5vw,2.75rem)] font-semibold tracking-tight text-[var(--color-heading)]">
               {name}
             </h1>
-            <StatusPulse label="system online · javac DigitalGarden.java" />
+            <StatusPulse />
           </div>
           {profile?.bio ? (
             <p className="mx-auto mt-3 max-w-xl whitespace-pre-line text-[var(--color-text-muted)]">
