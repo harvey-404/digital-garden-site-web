@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const FALLBACK_PORTRAIT = "/portraits/studio.png";
+const FALLBACK_PORTRAIT = "/portraits/studio.jpg";
 
 interface FlipAvatarProps {
   initial: string;
