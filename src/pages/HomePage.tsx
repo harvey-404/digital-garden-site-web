@@ -4,9 +4,11 @@ import { listPosts } from "../api/posts";
 import { listProjects } from "../api/projects";
 import { getProfile } from "../api/profile";
 import type { PostVO, ProjectVO, ProfileVO } from "../types";
+import FlipAvatar from "../components/FlipAvatar";
 import PostCard from "../components/PostCard";
 import ProjectCard from "../components/ProjectCard";
 import Spinner from "../components/Spinner";
+import StatusPulse from "../components/StatusPulse";
 import { EmptyState, SectionHeader } from "../components/ui/PagePrimitives";
 
 export default function HomePage() {
@@ -31,29 +33,29 @@ export default function HomePage() {
 
   return (
     <div className="space-y-14">
-      <section className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-10 text-center shadow-[var(--shadow-sm)] sm:px-10">
+      <section className="relative overflow-visible rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-10 text-center shadow-[var(--shadow-sm)] sm:px-10">
         <div
-          className="pointer-events-none absolute inset-0 opacity-40"
+          className="pointer-events-none absolute inset-0 rounded-2xl opacity-40"
           style={{
             background:
               "radial-gradient(ellipse at top, color-mix(in srgb, var(--color-accent) 18%, transparent), transparent 65%)",
           }}
         />
         <div className="relative">
-          {profile?.avatarUrl ? (
-            <img
-              src={profile.avatarUrl}
-              alt="avatar"
-              className="mx-auto h-24 w-24 rounded-full object-cover ring-4 ring-[var(--color-code-bg)]"
-            />
-          ) : (
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[var(--color-code-bg)] font-serif text-3xl text-[var(--color-accent)]">
-              {name.charAt(0)}
-            </div>
-          )}
-          <h1 className="mt-5 font-serif text-[clamp(2rem,5vw,2.75rem)] font-semibold tracking-tight text-[var(--color-heading)]">
-            {name}
-          </h1>
+          <FlipAvatar
+            initial={name.charAt(0)}
+            name={name}
+            portraitUrl={profile?.avatarUrl}
+          />
+          <p className="mt-2 text-[0.7rem] tracking-wide text-[var(--color-text-muted)]">
+            悬停或点按，看另一面
+          </p>
+          <div className="mt-4 flex flex-col items-center gap-2">
+            <h1 className="font-serif text-[clamp(2rem,5vw,2.75rem)] font-semibold tracking-tight text-[var(--color-heading)]">
+              {name}
+            </h1>
+            <StatusPulse label="system online · javac DigitalGarden.java" />
+          </div>
           {profile?.bio ? (
             <p className="mx-auto mt-3 max-w-xl whitespace-pre-line text-[var(--color-text-muted)]">
               {profile.bio}
@@ -63,17 +65,11 @@ export default function HomePage() {
               记录灵感，展示成果 — 我的数字花园
             </p>
           )}
-          <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm">
-            <Link
-              to="/posts"
-              className="rounded-full bg-[var(--color-accent)] px-5 py-2 text-white transition hover:bg-[var(--color-accent-hover)]"
-            >
-              阅读灵感
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link to="/posts" className="dg-btn dg-btn--fill">
+              随想涂鸦
             </Link>
-            <Link
-              to="/projects"
-              className="rounded-full border border-[var(--color-border)] px-5 py-2 text-[var(--color-heading)] transition hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-            >
+            <Link to="/projects" className="dg-btn dg-btn--ghost">
               查看成果
             </Link>
           </div>
