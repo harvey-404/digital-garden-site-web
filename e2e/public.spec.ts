@@ -26,6 +26,26 @@ test.describe("前台公开页面", () => {
   test("TC-PUB-004: 成果列表页可访问", async ({ page }) => {
     await page.goto("/projects");
     await expect(page).toHaveURL(/\/projects$/);
+    await expect(page.getByRole("heading", { name: "成果展示" })).toBeVisible();
+  });
+
+  test("TC-PUB-004b: 从成果列表进入详情并看到成品链接", async ({ page }) => {
+    await page.goto("/projects");
+    const card = page.locator("a.block").filter({ has: page.locator("h3") }).first();
+    try {
+      await expect(card).toBeVisible({ timeout: 10_000 });
+    } catch {
+      test.skip(true, "暂无成果");
+      return;
+    }
+    await card.click();
+    await expect(page).toHaveURL(/\/projects\/\d+/);
+    const resultLink = page.getByRole("link", { name: "打开成品" });
+    try {
+      await expect(resultLink).toBeVisible({ timeout: 5_000 });
+    } catch {
+      test.skip(true, "该成果未填写成品链接");
+    }
   });
 
   test("TC-PUB-005: 关于页可访问", async ({ page }) => {

@@ -15,6 +15,7 @@
 | TC-PUB-002 | 前台 | 首页内容区块 | `public.spec.ts` |
 | TC-PUB-003 | 前台 | 灵感列表 | `public.spec.ts` |
 | TC-PUB-004 | 前台 | 成果列表 | `public.spec.ts` |
+| TC-PUB-004b | 前台 | 成果详情与成品链接 | `public.spec.ts` |
 | TC-PUB-005 | 前台 | 关于页 | `public.spec.ts` |
 | TC-PUB-006 | 前台 | 404 页面 | `public.spec.ts` |
 | TC-PUB-007 | 前台 | 文章详情入口 | `public.spec.ts` |
