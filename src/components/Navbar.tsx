@@ -11,7 +11,7 @@ const links = [
   { to: "/about", label: "关于" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ compact = false }: { compact?: boolean }) {
   return (
     <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-nav-bg)] backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -22,7 +22,7 @@ export default function Navbar() {
           Digital Garden
         </NavLink>
         <div className="flex items-center gap-4">
-          <ul className="flex gap-5 text-sm">
+          <ul className={`${compact ? "hidden sm:flex" : "flex"} gap-5 text-sm`}>
             {links.map((l) => (
               <li key={l.to}>
                 <NavLink

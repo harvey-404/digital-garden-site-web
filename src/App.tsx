@@ -41,6 +41,7 @@ import LedgerExpensesPage from "./pages/ledger/LedgerExpensesPage";
 import LedgerBudgetsPage from "./pages/ledger/LedgerBudgetsPage";
 import LedgerCategoriesPage from "./pages/ledger/LedgerCategoriesPage";
 import LedgerSettingsPage from "./pages/ledger/LedgerSettingsPage";
+import LedgerChatPage from "./pages/ledger/LedgerChatPage";
 
 export default function App() {
   return (
@@ -72,6 +73,7 @@ export default function App() {
               >
                 <Route index element={<LedgerDashboardPage />} />
                 <Route path="expenses" element={<LedgerExpensesPage />} />
+                <Route path="chat" element={<LedgerChatPage />} />
                 <Route path="budgets" element={<LedgerBudgetsPage />} />
                 <Route path="categories" element={<LedgerCategoriesPage />} />
                 <Route path="settings" element={<LedgerSettingsPage />} />

@@ -1,5 +1,6 @@
 @import "./styles/tokens.css";
 @import "./styles/article-prose.css";
+@import "./styles/ledger-chat.css";
 
 @tailwind base;
 @tailwind components;

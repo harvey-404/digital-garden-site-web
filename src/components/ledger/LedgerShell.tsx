@@ -1,10 +1,11 @@
-import { NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useLedgerAuth } from "../../context/LedgerAuthContext";
 import MonthPicker, { useLedgerMonth } from "./MonthPicker";
 
 const ledgerLinks = [
   { to: "/ledger", label: "概览", end: true },
+  { to: "/ledger/chat", label: "对话记账" },
   { to: "/ledger/expenses", label: "明细" },
   { to: "/ledger/budgets", label: "预算" },
   { to: "/ledger/categories", label: "分类" },
@@ -16,12 +17,13 @@ export default function LedgerShell() {
   const navigate = useNavigate();
   const [month, setMonth] = useLedgerMonth();
   const [params] = useSearchParams();
+  const isChat = /^\/ledger\/chat\/?$/.test(useLocation().pathname);
 
   useEffect(() => {
-    if (!params.get("month")) {
+    if (!isChat && !params.get("month")) {
       setMonth(month);
     }
-  }, [params, month, setMonth]);
+  }, [params, month, setMonth, isChat]);
 
   const handleSignOut = () => {
     signOut();
@@ -41,7 +43,7 @@ export default function LedgerShell() {
           {ledgerLinks.map((l) => (
             <NavLink
               key={l.to}
-              to={{ pathname: l.to, search: monthSearch }}
+              to={{ pathname: l.to, search: l.to === "/ledger/chat" ? "" : monthSearch }}
               end={l.end}
               className={({ isActive }) =>
                 `shrink-0 rounded-lg px-3 py-2 transition ${
@@ -69,12 +71,12 @@ export default function LedgerShell() {
         </div>
       </div>
 
-      <div
+      {!isChat && <div
         className="rounded-xl bg-[var(--color-code-bg)] px-2 py-2 sm:px-3"
         aria-label="当前月份"
       >
         <MonthPicker value={month} onChange={setMonth} variant="bar" />
-      </div>
+      </div>}
       <Outlet />
     </div>
   );
