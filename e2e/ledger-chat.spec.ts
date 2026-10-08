@@ -1,8 +1,18 @@
 import { test, expect } from "@playwright/test";
 
+async function dragFiles(page: import("@playwright/test").Page, files: {name: string; type: string}[], event: string) {
+  const transfer=await page.evaluateHandle(files=>{
+    const data=new DataTransfer();
+    for(const file of files)data.items.add(new File([new Uint8Array([137,80,78,71])],file.name,{type:file.type}));
+    return data;
+  },files);
+  await page.getByRole("textbox",{name:"消费描述"}).dispatchEvent(event,{dataTransfer:transfer});
+  await transfer.dispose();
+}
+
 const noon = 1791259200;
 test.beforeEach(async ({ page }) => {
-  let version=1, status="READY";
+  let version=1, status="READY", attachmentId=88;
   let messages: object[]=[];
   let items=[
     {id:11,ordinal:1,amount:"32.50",categoryId:1001,description:"午饭",recordedAt:noon,datePrecision:"DATE",defaultedToday:true,future:false,sourceMessageId:1,sourceAttachmentIds:[],evidence:"午饭32块5",issues:[],duplicateExpenseIds:[],duplicateAcknowledged:false},
@@ -28,7 +38,7 @@ test.beforeEach(async ({ page }) => {
     else if(path.endsWith("/cancel")) {status="CANCELLED";version++;data=draft();}
     else if(path.includes("/items/") && method==="DELETE") {const id=Number(path.split("/").pop());items=items.filter(i=>i.id!==id);version++;data=draft();}
     else if(path.includes("/items/") && method==="PUT") {const id=Number(path.split("/").pop());const body=route.request().postDataJSON();items=items.map(i=>i.id===id?{...i,...body}:i);version++;data=draft();}
-    else if(path.endsWith("/chat/attachments"))data={id:88,contentType:"image/png",width:40,height:40};
+    else if(path.endsWith("/chat/attachments"))data={id:attachmentId++,contentType:"image/png",width:40,height:40};
     else {await route.fulfill({json:{code:404,message:"测试接口不存在",data:null}});return;}
     await route.fulfill({json:{code:0,message:"success",data}});
   });
@@ -71,4 +81,50 @@ test("撤销需要确认且保留结果",async({page})=>{
   await page.getByRole("button",{name:"发送消息"}).click();await page.getByRole("button",{name:"确认全部记账"}).click();
   await page.getByRole("button",{name:"撤销本次记账"}).click();
   await page.getByRole("button",{name:"确定撤销"}).click();await expect(page.getByText("已撤销",{exact:true})).toBeVisible();
+});
+
+test("拖入图片显示提示与预览，发送时上传",async({page})=>{
+  await page.goto("/ledger/chat");
+  const files=[{name:"receipt.png",type:"image/png"},{name:"receipt2.jpg",type:"image/jpeg"}];
+  await dragFiles(page,files,"dragenter");
+  await expect(page.getByRole("status").filter({hasText:"松开添加消费图片"})).toBeVisible();
+  await dragFiles(page,files,"drop");
+  await expect(page.getByAltText("待发送的消费图片")).toHaveCount(2);
+  await expect(page.getByRole("button",{name:"发送消息"})).toBeEnabled();
+  const upload=page.waitForRequest(r=>r.url().endsWith("/chat/attachments") && r.method()==="POST");
+  await page.getByRole("button",{name:"发送消息"}).click();
+  await upload;
+  await expect(page.getByAltText("待发送的消费图片")).toHaveCount(0);
+  await expect(page.getByText("¥50.50",{exact:true})).toBeVisible();
+});
+
+test("拖入图片沿用数量和格式限制",async({page})=>{
+  await page.goto("/ledger/chat");
+  await dragFiles(page,[{name:"notes.txt",type:"text/plain"}],"drop");
+  await expect(page.getByText("请选择JPEG、PNG或WebP图片；HEIC请先转为JPEG")).toBeVisible();
+  await expect(page.getByAltText("待发送的消费图片")).toHaveCount(0);
+  await dragFiles(page,[{name:"receipt.png",type:"image/png"}],"drop");
+  await expect(page.getByAltText("待发送的消费图片")).toHaveCount(1);
+  await dragFiles(page,Array.from({length:3},(_,i)=>({name:`receipt${i}.png`,type:"image/png"})),"drop");
+  await expect(page.getByText("一次最多3张图片，请分批发送")).toBeVisible();
+  await expect(page.getByAltText("待发送的消费图片")).toHaveCount(1);
+});
+
+test("过大图片被拒绝，处理消息时禁止拖入",async({page})=>{
+  await page.goto("/ledger/chat");
+  const large=await page.evaluateHandle(()=>{
+    const data=new DataTransfer();data.items.add(new File([new Uint8Array(10*1024*1024+1)],"large.png",{type:"image/png"}));return data;
+  });
+  await page.getByRole("textbox",{name:"消费描述"}).dispatchEvent("drop",{dataTransfer:large});await large.dispose();
+  await expect(page.getByText("每张图片最多10MB")).toBeVisible();
+  await expect(page.getByAltText("待发送的消费图片")).toHaveCount(0);
+  let release!: ()=>void;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  await page.route("**/api/ledger/chat/messages",async route=>{await gate;await route.fallback();});
+  await page.getByRole("textbox",{name:"消费描述"}).fill("午饭32块5，打车18");
+  await page.getByRole("button",{name:"发送消息"}).click();
+  await expect(page.getByRole("textbox",{name:"消费描述"})).toBeDisabled();
+  await dragFiles(page,[{name:"receipt.png",type:"image/png"}],"drop");
+  await expect(page.getByAltText("待发送的消费图片")).toHaveCount(0);
+  release();await expect(page.getByText("¥50.50",{exact:true})).toBeVisible();
 });
