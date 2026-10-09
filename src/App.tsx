@@ -42,6 +42,7 @@ import LedgerBudgetsPage from "./pages/ledger/LedgerBudgetsPage";
 import LedgerCategoriesPage from "./pages/ledger/LedgerCategoriesPage";
 import LedgerSettingsPage from "./pages/ledger/LedgerSettingsPage";
 import LedgerChatPage from "./pages/ledger/LedgerChatPage";
+import TrackerPage, { TrackerLoginPage } from "./pages/tracker/TrackerPage";
 
 export default function App() {
   return (
@@ -50,6 +51,8 @@ export default function App() {
         <BrowserRouter>
           <Toaster position="top-center" />
           <Routes>
+            <Route path="/tracker/login" element={<TrackerLoginPage />} />
+            <Route path="/tracker" element={<TrackerPage />} />
             <Route element={<Layout />}>
               <Route index element={<HomePage />} />
               <Route path="posts" element={<PostListPage />} />

@@ -69,6 +69,9 @@ export default function HomePage() {
             <Link to="/projects" className="dg-btn dg-btn--ghost">
               查看成果
             </Link>
+            <Link to="/tracker" className="dg-btn dg-btn--ghost">
+              有数 · 记录日常
+            </Link>
           </div>
         </div>
       </section>

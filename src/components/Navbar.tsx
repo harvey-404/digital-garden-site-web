@@ -8,6 +8,7 @@ const links = [
   { to: "/projects", label: "成果" },
   { to: "/album", label: "足迹" },
   { to: "/games", label: "乐园" },
+  { to: "/tracker", label: "日常" },
   { to: "/about", label: "关于" },
 ];
 
@@ -22,7 +23,7 @@ export default function Navbar({ compact = false }: { compact?: boolean }) {
           Digital Garden
         </NavLink>
         <div className="flex items-center gap-4">
-          <ul className={`${compact ? "hidden sm:flex" : "flex"} gap-5 text-sm`}>
+          <ul className={`${compact ? "hidden sm:flex" : "flex"} max-w-[70vw] flex-wrap justify-end gap-x-3 gap-y-1 text-xs sm:gap-x-5 sm:text-sm`}>
             {links.map((l) => (
               <li key={l.to}>
                 <NavLink

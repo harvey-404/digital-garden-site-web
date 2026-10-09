@@ -40,12 +40,14 @@ export async function ledgerFetch<T>(path: string, init: RequestInit = {}): Prom
 
   if (body.code === 401) {
     clearLedgerToken();
-    window.location.href = "/ledger/login";
+    if (window.location.pathname === "/ledger" || window.location.pathname.startsWith("/ledger/")) {
+      window.location.href = "/ledger/login";
+    }
     throw new Error("登录已过期，请重新登录");
   }
 
   if (body.code === 403 && body.message?.includes("ONBOARDING")) {
-    if (!window.location.pathname.startsWith("/ledger/onboarding")) {
+    if ((window.location.pathname === "/ledger" || window.location.pathname.startsWith("/ledger/")) && !window.location.pathname.startsWith("/ledger/onboarding")) {
       window.location.href = "/ledger/onboarding";
     }
   }

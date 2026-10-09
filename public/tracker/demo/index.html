@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="行为记录工具首页交互原型：次数、时长、剩余额度和目标进度。" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>有数 · 我的日常</title>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body><div style="background:#244f38;color:white;text-align:center;padding:10px 14px;font:13px system-ui">公开交互示例 · 以下为样例数据，保存在此浏览器中。 <a style="color:white;text-decoration:underline" href="/tracker">返回真实有数 ↗</a></div>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="./" aria-label="有数首页"><span class="brand-mark" aria-hidden="true">有</span><span>有数<span class="brand-caption">让日常看得见</span></span></a>
+        <nav class="navigation" aria-label="主要导航">
+          <button type="button" class="nav-item is-current" aria-current="page" data-action="home">我的日常</button>
+          <button type="button" class="nav-item" data-action="history">记录</button>
+          <button type="button" class="nav-item" data-action="library">活动库</button>
+        </nav>
+        <div class="header-actions"><span class="preview-label">首页预览</span><button type="button" class="theme-button" id="theme-button" aria-label="切换深色外观">深色</button><span class="avatar" aria-label="示例用户 Harvey">H</span></div>
+      </div>
+    </header>
+
+    <main class="main-shell">
+      <section class="page-heading" aria-labelledby="page-title">
+        <div><p class="greeting">10月9日，星期五</p><h1 id="page-title">我的日常<span class="heading-dot" aria-hidden="true">.</span></h1><p class="heading-description">看看本周的进度，也记下今天发生的事。</p></div>
+        <div class="week-indicator"><span class="week-label">本周</span><strong>10月5日 - 10月11日</strong><span class="sample-label">示例数据</span></div>
+      </section>
+
+      <section class="goal-composer" aria-labelledby="composer-title">
+        <div class="composer-heading"><span class="ai-mark" aria-hidden="true">AI</span><div><h2 id="composer-title">一个小目标，从一句话开始</h2><p>告诉我想记录什么，以及希望做到多少。</p></div><span class="composer-demo">交互演示</span></div>
+        <form id="goal-composer-form" class="composer-form">
+          <label class="sr-only" for="goal-input">用一句话描述目标</label>
+          <input id="goal-input" name="goal" autocomplete="off" maxlength="160" placeholder="比如：每周至少学习三次，每次半小时" required />
+          <button type="submit" class="button button-primary">添加目标<span aria-hidden="true">↗</span></button>
+        </form>
+        <div class="composer-examples"><span>试试说</span><button type="button" data-example="每周至少学习三次，每次至少半小时">每周学习三次</button><button type="button" data-example="每天最多刷三十分钟短视频">每天少刷一会儿</button><button type="button" data-action="library" class="choose-template">从活动库选择<span aria-hidden="true">↗</span></button></div>
+        <p id="composer-feedback" class="composer-feedback" role="status" hidden></p>
+      </section>
+
+      <section class="activities-section" aria-labelledby="activities-title">
+        <div class="activities-toolbar"><div class="section-label"><h2 id="activities-title">正在记录</h2><span id="activity-count">6项日常</span></div><div class="filters" role="group" aria-label="按状态查看活动"><button type="button" data-filter="all" aria-pressed="true">全部<span data-count="all">6</span></button><button type="button" data-filter="todo" aria-pressed="false">待达成<span data-count="todo">3</span></button><button type="button" data-filter="attention" aria-pressed="false">需留意<span data-count="attention">1</span></button><button type="button" data-filter="done" aria-pressed="false">已达成<span data-count="done">1</span></button></div><button type="button" class="text-button" data-action="library"><span aria-hidden="true">＋</span>添加活动</button></div>
+        <div id="activity-grid" class="activity-grid" aria-live="polite"></div>
+        <div id="empty-filter" class="empty-filter" hidden><span class="empty-symbol" aria-hidden="true">✓</span><h3 id="empty-title">当前没有需要留意的活动</h3><p id="empty-description">你可以查看全部日常，继续记录。</p><button type="button" class="button button-secondary" data-action="show-all">查看全部</button></div>
+      </section>
+      <footer class="prototype-footer"><p>首页交互预览<span>图标位置已预留，记录仅保存在本机。</span></p><button type="button" class="text-button" data-action="reset">恢复示例</button></footer>
+    </main>
+
+    <dialog id="record-dialog" class="dialog">
+      <form id="record-form" class="dialog-form">
+        <div class="dialog-heading"><div><p class="dialog-eyebrow">记录一下</p><h2 id="record-title">记录篮球</h2></div><button type="button" class="close-button" data-close aria-label="关闭记录窗口">×</button></div>
+        <p class="dialog-description" id="record-rule"></p>
+        <div id="record-quantity-field" class="field"><label for="record-quantity">本次数量<span id="record-unit">次</span></label><input id="record-quantity" type="number" inputmode="numeric" min="1" max="100" step="1" value="1" /></div>
+        <div id="record-minutes-field" class="field"><label for="record-minutes">本次时长<span>分钟</span></label><input id="record-minutes" type="number" inputmode="numeric" min="1" max="1440" step="1" value="30" /></div>
+        <div class="field"><label for="record-date">发生日期</label><input id="record-date" type="date" value="2026-10-09" max="2026-10-09" required /></div>
+        <div class="dialog-actions"><button type="button" class="button button-secondary" data-close>取消</button><button type="submit" class="button button-primary">保存记录</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="library-dialog" class="dialog library-dialog">
+      <div class="dialog-heading"><div><p class="dialog-eyebrow">从喜欢的事情开始</p><h2>活动库</h2></div><button type="button" class="close-button" data-close aria-label="关闭活动库">×</button></div><p class="dialog-description">先选一个活动，目标由你来定。</p><div id="library-grid" class="library-grid"></div><button type="button" class="custom-activity" data-action="custom">＋ 创建自己的活动</button>
+    </dialog>
+
+    <dialog id="goal-dialog" class="dialog">
+      <form id="goal-form" class="dialog-form">
+        <div class="dialog-heading"><div><p class="dialog-eyebrow">按自己的节奏</p><h2 id="goal-dialog-title">添加活动</h2></div><button type="button" class="close-button" data-close aria-label="关闭目标窗口">×</button></div>
+        <div class="field"><label for="activity-name">活动名称</label><input id="activity-name" maxlength="16" required /></div>
+        <div class="field-row"><div class="field"><label for="goal-period">统计周期</label><select id="goal-period"><option value="week">每周</option><option value="day">每天</option></select></div><div class="field"><label for="goal-metric">记录什么</label><select id="goal-metric"><option value="count">次数</option><option value="minutes">时长</option></select></div></div>
+        <div class="field-row"><div class="field"><label for="goal-mode">目标方式</label><select id="goal-mode"><option value="none">仅统计</option><option value="min">至少</option><option value="max">最多</option></select></div><div class="field" id="goal-target-field"><label for="goal-target">目标数值<span id="goal-target-unit">次</span></label><input id="goal-target" type="number" min="1" max="10000" step="1" inputmode="numeric" value="3" /></div></div>
+        <div class="field" id="goal-session-field"><label for="goal-session">每次时长条件<span>可选，分钟</span></label><input id="goal-session" type="number" min="1" max="1440" step="1" inputmode="numeric" placeholder="不限制每次时长" /></div>
+        <div class="dialog-actions"><button type="button" class="button button-secondary" data-close>取消</button><button type="submit" class="button button-primary">保存目标</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="history-dialog" class="dialog history-dialog"><div class="dialog-heading"><div><p class="dialog-eyebrow">一点一滴，都有记录</p><h2 id="history-title">最近记录</h2></div><button type="button" class="close-button" data-close aria-label="关闭历史记录">×</button></div><p class="dialog-description" id="history-description">本周的行为记录</p><div id="history-list" class="history-list"></div></dialog>
+
+    <div id="toast" class="toast" role="status" hidden><span id="toast-message"></span><button type="button" id="undo-button">撤销</button><button type="button" id="dismiss-toast" aria-label="关闭消息">×</button></div>
+  </body>
+</html>
