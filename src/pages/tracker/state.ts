@@ -6,6 +6,10 @@ export function queryKey(query: TrackerQuery): string {
   return `${query.date}|${query.period}`;
 }
 
+export function normalizeSelectedDate(value: string, today: string): string {
+  return value || today;
+}
+
 export function canApplySnapshot(requestKey: string, currentKey: string, requestVersion: number, latestVersion: number): boolean {
   return requestKey === currentKey && requestVersion === latestVersion;
 }

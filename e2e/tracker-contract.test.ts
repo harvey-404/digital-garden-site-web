@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { formatDuration, progressText, progressLabel, ruleText, recordEditPayload, periodLabel, toUtc, localDisplay, timerElapsed, visibleHistoryRecords, retryRequestId } from '../src/pages/tracker/format.ts';
-import { canApplySnapshot, queryKey } from '../src/pages/tracker/state.ts';
+import { canApplySnapshot, normalizeSelectedDate, queryKey } from '../src/pages/tracker/state.ts';
 
 test('seconds remain visible at a one-second overage', () => {
   assert.equal(formatDuration(1), '1秒');
@@ -65,4 +65,10 @@ test('delayed mutation refresh cannot replace summaries after a period switch', 
   assert.equal(canApplySnapshot(queryKey(old), queryKey(current), 4, 4), false);
   assert.equal(canApplySnapshot(queryKey(current), queryKey(current), 3, 4), false);
   assert.equal(canApplySnapshot(queryKey(current), queryKey(current), 4, 4), true);
+});
+
+test('clearing date picker keeps subsequent mutation and retry query on today', () => {
+  const date = normalizeSelectedDate('', '2026-10-09');
+  assert.equal(queryKey({ date, period: 'WEEK' }), '2026-10-09|WEEK');
+  assert.equal(normalizeSelectedDate('2026-10-08', '2026-10-09'), '2026-10-08');
 });
