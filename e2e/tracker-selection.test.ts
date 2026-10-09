@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createElement, useRef } from 'react';
+import { createElement, useRef, useState } from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { useTrackerSelection } from '../src/pages/tracker/useTrackerSelection.ts';
-import { canApplySnapshot, queryKey, type TrackerQuery } from '../src/pages/tracker/state.ts';
+import { canApplySnapshot, queryKey, quickRecordFromToday, type TrackerQuery } from '../src/pages/tracker/state.ts';
 import { requestedPeriodLabel } from '../src/pages/tracker/format.ts';
 import type { Period } from '../src/types/tracker.ts';
 
@@ -78,4 +78,46 @@ test('explicit history stays fixed across Monday; resetting to empty resumes fol
     await clock.move('2026-10-12T16:00:00Z', '');
     assert.equal(queryKey(clock.current.selectionRef.current), '2026-10-13|WEEK');
   } finally { await clock.close(); }
+});
+
+test('history selected while quick save is pending wins over completion and its refresh', async () => {
+  const today = '2026-10-09', tick = Date.parse('2026-10-09T02:00:00Z');
+  let latest!: ReturnType<typeof useTrackerSelection>;
+  let select!: (value: string) => void;
+  const refresh = async () => {};
+  function Probe() {
+    const [date, setDate] = useState('2026-10-01');
+    const selectionRef = useRef<TrackerQuery>({ date, period: 'DAY' });
+    latest = useTrackerSelection(date, 'DAY', 'Asia/Shanghai', tick, true, refresh, selectionRef);
+    select = value => {
+      // Match the event handler's immediate ref update before React commits effects.
+      selectionRef.current = { date: value || today, period: 'DAY' };
+      setDate(value);
+    };
+    return null;
+  }
+  let renderer!: ReactTestRenderer;
+  let releaseSave!: () => void;
+  const pending = new Promise<void>(resolve => { releaseSave = resolve; });
+  let saved!: Promise<boolean>, startedQuery = '', refreshedQuery = '';
+  await act(async () => { renderer = create(createElement(Probe)); });
+  try {
+    await act(async () => {
+      saved = quickRecordFromToday(() => select(''), async () => {
+        startedQuery = queryKey(latest.selectionRef.current);
+        await pending;
+        refreshedQuery = queryKey(latest.selectionRef.current);
+        return true;
+      });
+    });
+    await act(async () => { select('2026-10-08'); });
+    await act(async () => { releaseSave(); assert.equal(await saved, true); });
+    assert.equal(latest.displayDate, '2026-10-08');
+    assert.equal(queryKey(latest.selectionRef.current), '2026-10-08|DAY');
+    assert.equal(refreshedQuery, '2026-10-08|DAY');
+    assert.equal(startedQuery, '2026-10-09|DAY', 'today ref must update before save starts');
+  } finally {
+    releaseSave();
+    await act(async () => { renderer.unmount(); });
+  }
 });

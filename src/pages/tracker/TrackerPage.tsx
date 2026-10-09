@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { clearTrackerToken, requestId, saveTrackerToken, trackerApi, trackerToken } from '../../api/tracker';
 import type { Activity, ActivityInput, Direction, Metric, Period, RuleInput, Timer, TrackerRecord, TrackerUser } from '../../types/tracker';
 import { formatDuration, goalValue, localDisplay, periodLabel, progressLabel, progressText, recordEditPayload, requestedPeriodLabel, retryRequestId, ruleText, statusText, timerElapsed, toUtc, visibleHistoryRecords } from './format';
-import { canApplySnapshot, normalizeSelectedDate, queryKey, type TrackerQuery } from './state';
+import { canApplySnapshot, normalizeSelectedDate, queryKey, quickRecordFromToday, type TrackerQuery } from './state';
 import { useTrackerSelection } from './useTrackerSelection';
 import '../../styles/tracker.css';
 
@@ -105,7 +105,20 @@ export default function TrackerPage() {
   const visible = activities.filter(a => filter === 'all' || filter === 'attention' && a.summary.status === 'OVER' || filter === 'done' && a.summary.status === 'DONE' || filter === 'todo' && !['DONE', 'OVER'].includes(a.summary.status));
 
   async function submitAi(e: FormEvent) { e.preventDefault(); const text = aiText.trim(); if (!text || busyRef.current) return; aiRequestRef.current = retryRequestId(aiRequestRef.current, text); busyRef.current = true; setBusy(true); setAiBusy(true); setError(''); setNotice(''); try { const result = await trackerApi.natural(text, aiRequestRef.current.id); if (result.status === 'CREATED') { aiRequestRef.current = null; setAiText(''); setClarification(''); setNotice(result.message || '目标已保存'); const today = todayIn(zone); selectionRef.current = { date: today, period: selectionRef.current.period }; setTick(Date.now()); setDate(''); await refresh(selectionRef.current.date, selectionRef.current.period); } else { setClarification(result.message || '请补充完整目标'); } } catch (err) { setError(`${errorText(err)}。你可以用下方手动创建。`); } finally { busyRef.current = false; setAiBusy(false); setBusy(false); } }
-  async function quickRecord(a: Activity) { if (maybeDuration(a)) { setModal({ kind: 'record', activity: a }); return; } if (!quickRequestRef.current.has(a.id)) quickRequestRef.current.set(a.id, requestId()); const id = quickRequestRef.current.get(a.id)!; const ok = await act(() => trackerApi.createRecord(a.id, { requestId: id, quantity: 1, startedAt: new Date().toISOString(), durationSeconds: 0, note: '' }), '已记录一次'); if (ok) { quickRequestRef.current.delete(a.id); setTick(Date.now()); setDate(''); } }
+  async function quickRecord(a: Activity) {
+    if (busyRef.current) return;
+    if (maybeDuration(a)) { setModal({ kind: 'record', activity: a }); return; }
+    if (!quickRequestRef.current.has(a.id)) quickRequestRef.current.set(a.id, requestId());
+    const id = quickRequestRef.current.get(a.id)!;
+    const ok = await quickRecordFromToday(() => {
+      const now = Date.now();
+      selectionRef.current = { date: localDisplay(new Date(now).toISOString(), zone).slice(0, 10), period: selectionRef.current.period };
+      setTick(now);
+      setDate('');
+    }, () => act(() => trackerApi.createRecord(a.id, { requestId: id, quantity: 1, startedAt: new Date().toISOString(), durationSeconds: 0, note: '' }), '已记录一次'));
+    if (ok) quickRequestRef.current.delete(a.id);
+  }
+
   async function timerAction(action: 'pause' | 'resume' | 'finish' | 'cancel') { if (!timer) return; await act(() => trackerApi.timerAction(timer.id, action), ({ pause: '计时已暂停', resume: '计时已继续', finish: '计时已保存', cancel: '计时已取消' })[action], panel === 'history'); }
   async function beginTimer(a: Activity) { if (!timerRequestRef.current.has(a.id)) timerRequestRef.current.set(a.id, requestId()); const id = timerRequestRef.current.get(a.id)!; const ok = await act(() => trackerApi.startTimer(a.id, id), '计时已开始'); if (ok) timerRequestRef.current.delete(a.id); }
   async function toggleRecord(r: TrackerRecord) { const ok = await act(() => trackerApi.deleted(r.id, !r.deleted), r.deleted ? '记录已恢复' : '记录已删除，可撤销', true); if (ok) setUndo(r.deleted ? null : r.id); }
