@@ -11,9 +11,9 @@ async function loginAsAdmin(page: Page) {
 }
 
 export const test = base.extend<{ adminPage: Page }>({
-  adminPage: async ({ page }, use) => {
+  adminPage: async ({ page }, providePage) => {
     await loginAsAdmin(page);
-    await use(page);
+    await providePage(page);
   },
 });
 
