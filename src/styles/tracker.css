@@ -4,3 +4,5 @@
 @media(prefers-reduced-motion:reduce){.tr-shell *, .tr-shell *:before, .tr-shell *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .tr-period strong{font-size:12px;color:var(--tr-muted);font-weight:500;white-space:nowrap}
 @media(max-width:650px){.tr-period{flex-wrap:wrap}.tr-period strong{width:100%}}
+.tr-dialog{border:0;margin:auto}
+.tr-dialog::backdrop{background:#172a1db3}

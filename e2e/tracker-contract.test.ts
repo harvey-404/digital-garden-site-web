@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { formatDuration, progressText, progressLabel, ruleText, recordEditPayload, periodLabel, toUtc, localDisplay, timerElapsed, visibleHistoryRecords, retryRequestId } from '../src/pages/tracker/format.ts';
+import { canApplySnapshot, queryKey } from '../src/pages/tracker/state.ts';
 
 test('seconds remain visible at a one-second overage', () => {
   assert.equal(formatDuration(1), '1秒');
@@ -55,4 +56,13 @@ test('identical retried payload reuses request ID but edited payload gets a new 
   const first = retryRequestId(null, 'goal A', () => 'id-1');
   assert.equal(retryRequestId(first, 'goal A', () => 'id-2').id, 'id-1');
   assert.equal(retryRequestId(first, 'goal B', () => 'id-2').id, 'id-2');
+});
+
+test('delayed mutation refresh cannot replace summaries after a period switch', () => {
+  const old = { date: '2026-10-09', period: 'DAY' };
+  const current = { date: '2026-10-09', period: 'WEEK' };
+  assert.notEqual(queryKey(old), queryKey(current));
+  assert.equal(canApplySnapshot(queryKey(old), queryKey(current), 4, 4), false);
+  assert.equal(canApplySnapshot(queryKey(current), queryKey(current), 3, 4), false);
+  assert.equal(canApplySnapshot(queryKey(current), queryKey(current), 4, 4), true);
 });
