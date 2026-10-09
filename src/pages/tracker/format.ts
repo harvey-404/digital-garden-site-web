@@ -21,26 +21,26 @@ export function requestedPeriodLabel(date: string, period: 'DAY' | 'WEEK'): stri
   return periodLabel(start, d.toISOString().slice(0, 10));
 }
 
-export function ruleText(rule: Pick<Rule, 'period' | 'metric' | 'direction' | 'target' | 'sessionDirection' | 'sessionSeconds' | 'effectiveFrom'> | null, includeDate = true): string {
+export function ruleText(rule: Pick<Rule, 'period' | 'metric' | 'direction' | 'target' | 'sessionDirection' | 'sessionSeconds' | 'effectiveFrom'> | null, includeDate = true, countUnit = '次'): string {
   if (!rule) return '仅统计';
   const date = includeDate ? `${Number(rule.effectiveFrom.slice(5, 7))}月${Number(rule.effectiveFrom.slice(8, 10))}日起 · ` : '';
   if (!rule.period || !rule.metric || !rule.direction) return `${date}仅统计`;
-  const base = `${rule.period === 'DAY' ? '每天' : '每周'}${rule.direction === 'MIN' ? '至少' : '最多'}${rule.metric === 'COUNT' ? `${rule.target}次` : formatDuration(rule.target)}`;
+  const base = `${rule.period === 'DAY' ? '每天' : '每周'}${rule.direction === 'MIN' ? '至少' : '最多'}${rule.metric === 'COUNT' ? `${rule.target}${countUnit}` : formatDuration(rule.target)}`;
   return `${date}${base}${rule.sessionDirection && rule.sessionSeconds ? ` · 每次${rule.sessionDirection === 'MIN' ? '至少' : '最多'}${formatDuration(rule.sessionSeconds)}` : ''}`;
 }
 
-export function progressText(summary: Pick<Summary, 'count' | 'qualifiedCount' | 'durationSeconds' | 'rule'>): string {
+export function progressText(summary: Pick<Summary, 'count' | 'qualifiedCount' | 'durationSeconds' | 'rule'>, countUnit = '次'): string {
   const r = summary.rule;
-  if (!r?.metric || !r.direction) return `${summary.count} 次 · ${formatDuration(summary.durationSeconds)}`;
+  if (!r?.metric || !r.direction) return `${summary.count} ${countUnit} · ${formatDuration(summary.durationSeconds)}`;
   if (r.metric === 'DURATION') return `${formatDuration(summary.durationSeconds)} / ${formatDuration(r.target)}`;
-  return `${r.direction === 'MIN' ? summary.qualifiedCount : summary.count} / ${r.target} 次`;
+  return `${r.direction === 'MIN' ? summary.qualifiedCount : summary.count} / ${r.target} ${countUnit}`;
 }
 
-export function progressLabel(summary: Pick<Summary, 'rule' | 'status' | 'remaining' | 'excess' | 'sessionExceeded'>): string {
+export function progressLabel(summary: Pick<Summary, 'rule' | 'status' | 'remaining' | 'excess' | 'sessionExceeded'>, countUnit = '次'): string {
   const r = summary.rule;
   if (!r?.metric || !r.direction) return '仅统计';
   if (summary.status === 'DONE') return '目标已达成';
-  const unit = (value: number) => r.metric === 'DURATION' ? formatDuration(value) : `${value}次`;
+  const unit = (value: number) => r.metric === 'DURATION' ? formatDuration(value) : `${value}${countUnit}`;
   const periodic = summary.excess > 0 ? `周期超出${unit(summary.excess)}` : summary.status === 'AT_LIMIT' ? '已达上限' : `${r.direction === 'MIN' ? '还差' : '剩余'}${unit(summary.remaining ?? 0)}`;
   return summary.sessionExceeded > 0 ? `${periodic} · ${summary.sessionExceeded}次单次时长超限` : periodic;
 }

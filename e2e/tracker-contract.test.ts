@@ -72,3 +72,14 @@ test('clearing date picker keeps subsequent mutation and retry query on today', 
   assert.equal(queryKey({ date, period: 'WEEK' }), '2026-10-09|WEEK');
   assert.equal(normalizeSelectedDate('2026-10-08', '2026-10-09'), '2026-10-08');
 });
+
+test('custom count units appear in goals and progress while durations retain time units', () => {
+  const rule = { period: 'DAY', metric: 'COUNT', direction: 'MAX', target: 3, sessionDirection: null, sessionSeconds: null, effectiveFrom: '2026-10-09', id: 1 };
+  const summary = { rule, count: 2, qualifiedCount: 2, durationSeconds: 0, status: 'WITHIN', remaining: 1, excess: 0, sessionExceeded: 0 };
+  assert.equal(ruleText(rule, false, '杯'), '每天最多3杯');
+  assert.equal(progressText(summary, '杯'), '2 / 3 杯');
+  assert.equal(progressLabel(summary, '杯'), '剩余1杯');
+  const timed = { ...summary, rule: { ...rule, metric: 'DURATION', target: 1800 }, durationSeconds: 60, remaining: 1740 };
+  assert.equal(progressText(timed, '杯'), '1分 / 30分');
+  assert.equal(progressLabel(timed, '杯'), '剩余29分');
+});
