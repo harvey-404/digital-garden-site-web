@@ -285,3 +285,5 @@ input::placeholder { color: var(--muted); opacity: 1; }
 }
 @media (max-width: 359px) { .activity-grid { grid-template-columns: 1fr; } .card-main { flex-direction: row; min-height: 126px; } .card-rule { min-height: 18px; } .card-progress { min-height: 62px; } .header-inner { gap: 12px; } .navigation { gap: 12px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+.card-bottom{flex-wrap:wrap;gap:8px}.card-bottom .card-decrement{background:var(--surface-soft,#eef3eb);color:var(--muted,#6b786d)}.card-bottom .card-detail{margin-left:auto}.card-decrement:disabled{opacity:.45;cursor:not-allowed}

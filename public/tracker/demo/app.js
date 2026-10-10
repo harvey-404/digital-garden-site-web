@@ -98,7 +98,7 @@ function cardMarkup(activity) {
     }).join('');
     progress = `<div class="session-slots" aria-label="每次记录与剩余次数">${slots}</div>`;
   }
-  return `<article class="activity-card ${info.status}" data-activity="${escape(activity.id)}" aria-labelledby="title-${escape(activity.id)}"><div class="card-top"><h3 class="card-title" id="title-${escape(activity.id)}">${escape(activity.name)}</h3><span class="status-pill ${info.status}">${info.done ? '<span aria-hidden="true">✓</span>' : ''}${info.statusLabel}</span></div><p class="card-rule">${escape(ruleLabel(activity))}</p><div class="card-main"><div class="card-value"><p class="value-caption">${caption}</p><div class="value-line"><strong class="value-primary">${info.value}</strong>${target}<span class="value-unit">${escape(info.unit)}</span></div></div><div class="icon-slot" role="img" aria-label="${escape(activity.name)}图标预留位置"><span>图标位</span></div></div><div class="card-progress"><div class="progress-caption"><strong>${escape(info.remaining)}</strong><span>${rule.mode === 'min' ? `${Math.round(info.ratio * 100)}%` : rule.mode === 'none' ? '自由记录' : `${scope}额度`}</span></div>${progress}<p class="progress-help ${info.badSessions.length || info.over ? 'over' : ''}">${escape(info.help)}</p></div><div class="card-bottom"><button class="card-record" type="button" data-record="${escape(activity.id)}"><span aria-hidden="true">＋</span>${rule.metric === 'minutes' ? '记录时长' : activity.unit === '杯' ? '记一杯' : '记一次'}</button><button type="button" class="card-detail" data-detail="${escape(activity.id)}">详情 ↗</button></div></article>`;
+  return `<article class="activity-card ${info.status}" data-activity="${escape(activity.id)}" aria-labelledby="title-${escape(activity.id)}"><div class="card-top"><h3 class="card-title" id="title-${escape(activity.id)}">${escape(activity.name)}</h3><span class="status-pill ${info.status}">${info.done ? '<span aria-hidden="true">✓</span>' : ''}${info.statusLabel}</span></div><p class="card-rule">${escape(ruleLabel(activity))}</p><div class="card-main"><div class="card-value"><p class="value-caption">${caption}</p><div class="value-line"><strong class="value-primary">${info.value}</strong>${target}<span class="value-unit">${escape(info.unit)}</span></div></div><div class="icon-slot" role="img" aria-label="${escape(activity.name)}图标预留位置"><span>图标位</span></div></div><div class="card-progress"><div class="progress-caption"><strong>${escape(info.remaining)}</strong><span>${rule.mode === 'min' ? `${Math.round(info.ratio * 100)}%` : rule.mode === 'none' ? '自由记录' : `${scope}额度`}</span></div>${progress}<p class="progress-help ${info.badSessions.length || info.over ? 'over' : ''}">${escape(info.help)}</p></div><div class="card-bottom"><button class="card-record" type="button" data-record="${escape(activity.id)}"><span aria-hidden="true">＋</span>${rule.metric === 'minutes' ? '记录时长' : activity.unit === '杯' ? '记一杯' : '记一次'}</button>${rule.metric === 'count' ? `<button type="button" class="card-record card-decrement" data-decrement="${escape(activity.id)}" aria-label="${escape(activity.name)}减少1${escape(activity.unit)}" title="修正本周期最近的记录；仅剩1次时，该次时长也会撤销" ${info.rawCount ? '' : 'disabled'}>− 减一${escape(activity.unit)}</button>` : ''}<button type="button" class="card-detail" data-detail="${escape(activity.id)}">详情 ↗</button></div></article>`;
 }
 function render() {
   const counts = { all: state.activities.length, todo: 0, attention: 0, done: 0 };
@@ -154,6 +154,18 @@ function showRecord(id) {
   openDialog('#record-dialog');
   $('#record-minutes').focus();
   $('#record-minutes').select();
+}
+function decreaseRecord(id) {
+  const activity = activityById(id);
+  if (!activity || activity.rule.metric !== 'count') return;
+  const candidates = summary(activity).records;
+  const latest = candidates.map((item, index) => ({ item, index })).sort((a, b) => b.item.day.localeCompare(a.item.day) || b.index - a.index)[0]?.item;
+  if (!latest) { notify('这个周期没有可减少的记录'); return; }
+  const removedMinutes = latest.quantity === 1 ? latest.minutes : 0;
+  commit(() => {
+    if (latest.quantity > 1) latest.quantity--;
+    else activity.records.splice(activity.records.indexOf(latest), 1);
+  }, `${activity.name}已减少1${activity.unit}${removedMinutes ? `（同时撤销该次${duration(removedMinutes)}）` : ''}`);
 }
 function showLibrary() {
   $('#library-grid').innerHTML = templates.map((template) => {
@@ -253,6 +265,7 @@ document.addEventListener('click', (event) => {
     return;
   }
   if (button.dataset.example) { $('#goal-input').value = button.dataset.example; $('#goal-input').focus(); $('#composer-feedback').hidden = true; return; }
+  if (button.dataset.decrement && !button.disabled) { decreaseRecord(button.dataset.decrement); return; }
   const action = button.dataset.action;
   if (action === 'library') showLibrary();
   if (action === 'history') showHistory();
