@@ -1,80 +1,50 @@
 import { useEffect, useState } from "react";
+import { ArrowRight, ArrowUpRight } from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
 import { getProfile } from "../api/profile";
 import type { ProfileVO } from "../types";
 import Spinner from "../components/Spinner";
-import { PageHeader } from "../components/ui/PagePrimitives";
 
-interface SocialLink {
-  name: string;
-  url: string;
-}
+interface SocialLink { name: string; url: string; }
 
 export default function AboutPage() {
   const [profile, setProfile] = useState<ProfileVO | null>(null);
   const [links, setLinks] = useState<SocialLink[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
-    getProfile()
-      .then((p) => {
-        setProfile(p);
-        try {
-          setLinks(p.socialLinks ? (JSON.parse(p.socialLinks) as SocialLink[]) : []);
-        } catch {
-          setLinks([]);
-        }
-      })
-      .finally(() => setLoading(false));
+    let current = true;
+    getProfile().then((person) => {
+      if (!current) return;
+      setProfile(person);
+      try {
+        const social: unknown = person.socialLinks ? JSON.parse(person.socialLinks) : [];
+        setLinks(Array.isArray(social) ? social.filter((link): link is SocialLink => typeof link?.name === "string" && typeof link?.url === "string" && /^https?:\/\//i.test(link.url)) : []);
+      } catch { setLinks([]); }
+    }).catch(() => { if (current) setFailed(true); }).finally(() => { if (current) setLoading(false); });
+    return () => { current = false; };
   }, []);
-
   if (loading) return <Spinner />;
-
   const name = profile?.displayName ?? "Harvey";
-
   return (
-    <div className="space-y-8">
-      <PageHeader title="关于我" description="一点背景，以及如何找到我。" />
-
-      <div className="flex flex-col gap-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-sm)] sm:flex-row sm:items-start">
-        {profile?.avatarUrl ? (
-          <img
-            src={profile.avatarUrl}
-            alt="avatar"
-            className="h-24 w-24 shrink-0 rounded-full object-cover ring-4 ring-[var(--color-code-bg)]"
-          />
-        ) : (
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[var(--color-code-bg)] font-serif text-3xl text-[var(--color-accent)]">
-            {name.charAt(0)}
+    <div className="garden-about">
+      <header className="garden-page-heading"><p className="garden-page-kicker">花园的主人</p><h1>关于我<span aria-hidden="true">.</span></h1><p>一点背景，以及如何找到我。</p></header>
+      <section className="garden-about-grid">
+        <figure className="garden-about-portrait"><img src={profile?.avatarUrl || "/portraits/studio.jpg"} alt={name + " 的个人角色头像"} width="960" height="960" /><figcaption>{name} / Digital Garden</figcaption></figure>
+        <div className="garden-about-copy">
+          <p className="garden-hello">很高兴在这里遇见你。</p>
+          <h2>我是 {name}<span>，</span><br />这是一座慢慢生长的<br className="garden-about-break" />数字花园。</h2>
+          <p className="garden-about-bio">{profile?.bio || "欢迎来到我的数字花园。"}</p>
+          {failed && <p role="status" className="garden-notice">个人资料暂时未能加载，请稍后刷新。</p>}
+          <div className="garden-about-paths">
+            <Link to="/posts"><span>写下来的想法<small>文章、笔记和还在生长的灵感。</small></span><ArrowUpRight size={21} aria-hidden="true" /></Link>
+            <Link to="/projects"><span>做出来的东西<small>从一个念头，到可以打开的作品。</small></span><ArrowUpRight size={21} aria-hidden="true" /></Link>
+            <Link to="/album"><span>生活留下的足迹<small>走过的地方，值得留下的片刻。</small></span><ArrowUpRight size={21} aria-hidden="true" /></Link>
           </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <h2 className="font-serif text-2xl font-semibold text-[var(--color-heading)]">{name}</h2>
-          {profile?.bio && (
-            <p className="mt-3 whitespace-pre-line leading-relaxed text-[var(--color-text-muted)]">
-              {profile.bio}
-            </p>
-          )}
+          {links.length > 0 && <div className="garden-social-links">{links.map((link) => <a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.name} <ArrowUpRight size={15} aria-hidden="true" /></a>)}</div>}
+          <Link to="/" className="garden-text-link">回到花园 <ArrowRight size={16} aria-hidden="true" /></Link>
         </div>
-      </div>
-
-      {links.length > 0 && (
-        <section>
-          <h3 className="mb-3 font-serif text-lg font-semibold text-[var(--color-heading)]">链接</h3>
-          <div className="flex flex-wrap gap-3">
-            {links.map((l) => (
-              <a
-                key={l.url}
-                href={l.url}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-sm text-[var(--color-accent)] transition hover:border-[var(--color-accent)]"
-              >
-                {l.name}
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
+      </section>
     </div>
   );
 }

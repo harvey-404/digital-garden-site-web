@@ -1,4 +1,6 @@
-import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { List, X, ArrowUpRight } from "@phosphor-icons/react";
+import { NavLink, useLocation } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 
 const links = [
@@ -13,34 +15,40 @@ const links = [
 ];
 
 export default function Navbar({ compact = false }: { compact?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  useEffect(() => setOpen(false), [pathname]);
   return (
-    <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-nav-bg)] backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+    <header className="garden-navbar sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-nav-bg)] backdrop-blur">
+      <nav aria-label="主导航" onKeyDown={(event) => { if (event.key === "Escape") setOpen(false); }} className={`garden-nav-inner ${compact ? "garden-nav--compact" : ""}`}>
         <NavLink
           to="/"
-          className="font-serif text-lg font-bold text-[var(--color-heading)]"
+          className="garden-wordmark"
         >
+          <span className="garden-monogram" aria-hidden="true">dg<span>.</span></span>
           Digital Garden
         </NavLink>
-        <div className="flex items-center gap-4">
-          <ul className={`${compact ? "hidden sm:flex" : "flex"} max-w-[70vw] flex-wrap justify-end gap-x-3 gap-y-1 text-xs sm:gap-x-5 sm:text-sm`}>
+        <div className="garden-nav-actions">
+          <ul id="garden-navigation" className={`garden-nav-links ${open ? "is-open" : ""}`}>
             {links.map((l) => (
               <li key={l.to}>
                 <NavLink
                   to={l.to}
                   end={l.end}
                   className={({ isActive }) =>
-                    isActive
-                      ? "font-semibold text-[var(--color-heading)]"
-                      : "text-[var(--color-text-muted)] hover:text-[var(--color-heading)]"
+                    `garden-nav-link ${isActive ? "is-active" : ""}`
                   }
                 >
                   {l.label}
+                  {l.to === "/tracker" && <ArrowUpRight size={12} aria-hidden="true" />}
                 </NavLink>
               </li>
             ))}
           </ul>
           <ThemeToggle />
+          <button type="button" className="garden-menu-toggle" aria-label={open ? "收起导航" : "展开导航"} aria-expanded={open} aria-controls="garden-navigation" onClick={() => setOpen((value) => !value)} onKeyDown={(event) => { if (event.key === "Escape") setOpen(false); }}>
+            {open ? <X size={22} /> : <List size={22} />}
+          </button>
         </div>
       </nav>
     </header>

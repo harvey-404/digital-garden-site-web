@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getPost } from "../api/posts";
 import { likePost } from "../api/likes";
@@ -21,6 +21,7 @@ export default function PostDetailPage() {
   const [likeCount, setLikeCount] = useState(0);
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [nickname, setNickname] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -33,16 +34,23 @@ export default function PostDetailPage() {
 
   useEffect(() => {
     if (!slug) return;
+    let current = true;
     setLoading(true);
+    setLoadError(false);
+    setPost(null);
+    setComments([]);
+    setActiveHeadingId(null);
     getPost(slug)
       .then((p) => {
+        if (!current) return;
         setPost(p);
         setLikeCount(p.likeCount);
         setLiked(localStorage.getItem(LIKED_KEY_PREFIX + p.id) === "1");
-        return listComments(slug);
+        return listComments(slug).then((items) => { if (current) setComments(items); }).catch(() => {});
       })
-      .then(setComments)
-      .finally(() => setLoading(false));
+      .catch(() => { if (current) setLoadError(true); })
+      .finally(() => { if (current) setLoading(false); });
+    return () => { current = false; };
   }, [slug]);
 
   useEffect(() => {
@@ -75,7 +83,7 @@ export default function PostDetailPage() {
   }, [loading, headings]);
 
   const scrollToHeading = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById(id)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
     setActiveHeadingId(id);
   };
 
@@ -109,7 +117,7 @@ export default function PostDetailPage() {
   };
 
   if (loading) return <Spinner />;
-  if (!post) return <p className="text-[var(--color-text-muted)]">文章不存在</p>;
+  if (!post) return <div className="garden-notice"><p>{loadError ? "文章暂时未能加载，请稍后重试。" : "文章不存在"}</p><Link to="/posts" className="garden-text-link">返回灵感列表</Link></div>;
 
   const interaction = (
     <div className="space-y-10">
@@ -139,12 +147,14 @@ export default function PostDetailPage() {
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="你的昵称"
+            aria-label="你的昵称"
             className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)]"
           />
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="留下你的评论…"
+            aria-label="评论内容"
             rows={3}
             className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)]"
           />
@@ -181,6 +191,7 @@ export default function PostDetailPage() {
   return (
     <PostArticleLayout
       title={post.title}
+      summary={post.summary}
       meta={{
         tags: post.tags,
         inDtm: post.inDtm,

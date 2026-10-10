@@ -1,3 +1,5 @@
+import { lazy, Suspense } from "react";
+import Spinner from "./components/Spinner";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
@@ -9,40 +11,41 @@ import RequireAuth from "./components/RequireAuth";
 import RequireLedgerAuth from "./components/RequireLedgerAuth";
 import LedgerShell from "./components/ledger/LedgerShell";
 import HomePage from "./pages/HomePage";
-import PostListPage from "./pages/PostListPage";
-import PostDetailPage from "./pages/PostDetailPage";
-import ProjectListPage from "./pages/ProjectListPage";
-import ProjectDetailPage from "./pages/ProjectDetailPage";
-import TodoListPage from "./pages/TodoListPage";
-import TodoDetailPage from "./pages/TodoDetailPage";
-import AboutPage from "./pages/AboutPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import LoginPage from "./pages/admin/LoginPage";
-import DashboardPage from "./pages/admin/DashboardPage";
-import AdminPostListPage from "./pages/admin/AdminPostListPage";
-import PostEditPage from "./pages/admin/PostEditPage";
-import AdminProjectListPage from "./pages/admin/AdminProjectListPage";
-import ProjectEditPage from "./pages/admin/ProjectEditPage";
-import AdminTodoListPage from "./pages/admin/AdminTodoListPage";
-import TodoEditPage from "./pages/admin/TodoEditPage";
-import AdminAlbumListPage from "./pages/admin/AdminAlbumListPage";
-import AlbumEditPage from "./pages/admin/AlbumEditPage";
-import AdminSemanticGamePage from "./pages/admin/AdminSemanticGamePage";
-import CommentModerationPage from "./pages/admin/CommentModerationPage";
-import ProfileEditPage from "./pages/admin/ProfileEditPage";
-import AdminLedgerUsersPage from "./pages/admin/AdminLedgerUsersPage";
-import AlbumPage from "./pages/AlbumPage";
-import GamesPage from "./pages/GamesPage";
-import SemanticGamePage from "./pages/SemanticGamePage";
-import LedgerLoginPage from "./pages/ledger/LedgerLoginPage";
-import LedgerOnboardingPage from "./pages/ledger/LedgerOnboardingPage";
-import LedgerDashboardPage from "./pages/ledger/LedgerDashboardPage";
-import LedgerExpensesPage from "./pages/ledger/LedgerExpensesPage";
-import LedgerBudgetsPage from "./pages/ledger/LedgerBudgetsPage";
-import LedgerCategoriesPage from "./pages/ledger/LedgerCategoriesPage";
-import LedgerSettingsPage from "./pages/ledger/LedgerSettingsPage";
-import LedgerChatPage from "./pages/ledger/LedgerChatPage";
-import TrackerPage, { TrackerLoginPage } from "./pages/tracker/TrackerPage";
+const PostListPage = lazy(() => import("./pages/PostListPage"));
+const PostDetailPage = lazy(() => import("./pages/PostDetailPage"));
+const ProjectListPage = lazy(() => import("./pages/ProjectListPage"));
+const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage"));
+const TodoListPage = lazy(() => import("./pages/TodoListPage"));
+const TodoDetailPage = lazy(() => import("./pages/TodoDetailPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const LoginPage = lazy(() => import("./pages/admin/LoginPage"));
+const DashboardPage = lazy(() => import("./pages/admin/DashboardPage"));
+const AdminPostListPage = lazy(() => import("./pages/admin/AdminPostListPage"));
+const PostEditPage = lazy(() => import("./pages/admin/PostEditPage"));
+const AdminProjectListPage = lazy(() => import("./pages/admin/AdminProjectListPage"));
+const ProjectEditPage = lazy(() => import("./pages/admin/ProjectEditPage"));
+const AdminTodoListPage = lazy(() => import("./pages/admin/AdminTodoListPage"));
+const TodoEditPage = lazy(() => import("./pages/admin/TodoEditPage"));
+const AdminAlbumListPage = lazy(() => import("./pages/admin/AdminAlbumListPage"));
+const AlbumEditPage = lazy(() => import("./pages/admin/AlbumEditPage"));
+const AdminSemanticGamePage = lazy(() => import("./pages/admin/AdminSemanticGamePage"));
+const CommentModerationPage = lazy(() => import("./pages/admin/CommentModerationPage"));
+const ProfileEditPage = lazy(() => import("./pages/admin/ProfileEditPage"));
+const AdminLedgerUsersPage = lazy(() => import("./pages/admin/AdminLedgerUsersPage"));
+const AlbumPage = lazy(() => import("./pages/AlbumPage"));
+const GamesPage = lazy(() => import("./pages/GamesPage"));
+const SemanticGamePage = lazy(() => import("./pages/SemanticGamePage"));
+const LedgerLoginPage = lazy(() => import("./pages/ledger/LedgerLoginPage"));
+const LedgerOnboardingPage = lazy(() => import("./pages/ledger/LedgerOnboardingPage"));
+const LedgerDashboardPage = lazy(() => import("./pages/ledger/LedgerDashboardPage"));
+const LedgerExpensesPage = lazy(() => import("./pages/ledger/LedgerExpensesPage"));
+const LedgerBudgetsPage = lazy(() => import("./pages/ledger/LedgerBudgetsPage"));
+const LedgerCategoriesPage = lazy(() => import("./pages/ledger/LedgerCategoriesPage"));
+const LedgerSettingsPage = lazy(() => import("./pages/ledger/LedgerSettingsPage"));
+const LedgerChatPage = lazy(() => import("./pages/ledger/LedgerChatPage"));
+const TrackerPage = lazy(() => import("./pages/tracker/TrackerPage"));
+const TrackerLoginPage = lazy(() => import("./pages/tracker/TrackerPage").then((module) => ({ default: module.TrackerLoginPage })));
 
 export default function App() {
   return (
@@ -50,6 +53,7 @@ export default function App() {
       <LedgerAuthProvider>
         <BrowserRouter>
           <Toaster position="top-center" />
+          <Suspense fallback={<Spinner />}>
           <Routes>
             <Route path="/tracker/login" element={<TrackerLoginPage />} />
             <Route path="/tracker" element={<TrackerPage />} />
@@ -114,6 +118,7 @@ export default function App() {
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          </Suspense>
         </BrowserRouter>
       </LedgerAuthProvider>
     </AuthProvider>

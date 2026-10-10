@@ -21,7 +21,7 @@ export default function ProjectListPage() {
         title="成果展示"
         description="做过的项目小结。点开看总结，有成品的可以从详情进入。"
       />
-      <div className="grid gap-4">
+      <div className="garden-project-grid">
         {projects.map((p) => (
           <ProjectCard key={p.id} project={p} />
         ))}
