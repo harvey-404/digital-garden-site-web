@@ -113,12 +113,13 @@ export default function TrackerPage() {
     if (maybeDuration(a)) { setModal({ kind: 'record', activity: a }); return; }
     if (!quickRequestRef.current.has(a.id)) quickRequestRef.current.set(a.id, requestId());
     const id = quickRequestRef.current.get(a.id)!;
+    const startedAt = trackerApi.recordTime();
     const ok = await quickRecordFromToday(() => {
       const now = Date.now();
-      selectionRef.current = { date: localDisplay(new Date(now).toISOString(), zone).slice(0, 10), period: selectionRef.current.period };
+      selectionRef.current = { date: localDisplay(startedAt, zone).slice(0, 10), period: selectionRef.current.period };
       setTick(now);
       setDate('');
-    }, () => act(() => trackerApi.createRecord(a.id, { requestId: id, quantity: 1, startedAt: new Date().toISOString(), durationSeconds: 0, note: '' }), '已记录一次'));
+    }, () => act(() => trackerApi.createRecord(a.id, { requestId: id, quantity: 1, startedAt, durationSeconds: 0, note: '' }), '已记录一次'));
     if (ok) quickRequestRef.current.delete(a.id);
   }
 

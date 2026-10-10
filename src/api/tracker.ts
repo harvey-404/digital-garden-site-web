@@ -1,4 +1,5 @@
 import type { Activity, ActivityInput, Period, RecordInput, Timer, TrackerRecord, TrackerUser } from '../types/tracker';
+import { RecordClock } from '../pages/tracker/recordClock';
 
 const tokenKey = 'tracker_token';
 export const trackerToken = () => localStorage.getItem(tokenKey);
@@ -6,10 +7,12 @@ export const saveTrackerToken = (token: string) => localStorage.setItem(tokenKey
 export const clearTrackerToken = () => localStorage.removeItem(tokenKey);
 export const requestId = () => crypto.randomUUID();
 const base = `${import.meta.env.VITE_API_BASE_URL ?? '/api'}/tracker`;
+const recordClock = new RecordClock();
 
 async function call<T>(path: string, method = 'GET', data?: unknown): Promise<T> {
   const token = trackerToken();
   const response = await fetch(`${base}${path}`, { method, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, ...(data === undefined ? {} : { body: JSON.stringify(data) }) });
+  recordClock.observe(response.headers.get('Date'));
   let body: { code?: number; message?: string; data?: T };
   try { body = await response.json(); } catch { throw new Error('服务暂时没有响应，请稍后重试'); }
   if ((response.status === 401 || body.code === 401) && !path.startsWith('/auth/login') && !path.startsWith('/auth/register')) { clearTrackerToken(); window.dispatchEvent(new Event('tracker:unauthorized')); throw new Error('登录已过期，请重新登录'); }
@@ -18,6 +21,7 @@ async function call<T>(path: string, method = 'GET', data?: unknown): Promise<T>
 }
 
 export const trackerApi = {
+  recordTime: () => recordClock.now(),
   register: (username: string, password: string, timezone: string) => call<{ token: string; user: TrackerUser }>('/auth/register', 'POST', { username, password, timezone }),
   login: (username: string, password: string) => call<{ token: string; user: TrackerUser }>('/auth/login', 'POST', { username, password }),
   me: () => call<TrackerUser>('/auth/me'),
