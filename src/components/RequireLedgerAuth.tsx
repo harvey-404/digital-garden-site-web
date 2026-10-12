@@ -4,10 +4,12 @@ import { useLedgerAuth } from "../context/LedgerAuthContext";
 import Spinner from "./Spinner";
 
 export default function RequireLedgerAuth({ children }: { children: ReactNode }) {
-  const { isAuthenticated, onboardingDone, loading } = useLedgerAuth();
+  const { isAuthenticated, onboardingDone, loading, error, refreshMe } = useLedgerAuth();
   const location = useLocation();
 
   if (loading) return <Spinner />;
+
+  if (error) return <section><p role="alert">{error}</p><button onClick={() => void refreshMe().catch(() => {})}>重试</button></section>;
 
   if (!isAuthenticated) {
     return <Navigate to="/ledger/login" state={{ from: location }} replace />;

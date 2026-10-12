@@ -12,7 +12,7 @@
 .article-prose h3,
 .article-prose h4 {
   color: var(--color-heading);
-  font-family: "Fraunces", Georgia, serif;
+  font-family: "Fraunces Variable", Georgia, serif;
   font-weight: 600;
   letter-spacing: -0.02em;
   scroll-margin-top: 5rem;

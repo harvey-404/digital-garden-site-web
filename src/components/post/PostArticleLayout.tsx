@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { ArrowLeft, CalendarBlank, Clock, Eye } from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
 import { formatPostDate } from "../../lib/markdown";
 
 interface Props {
@@ -9,40 +11,19 @@ interface Props {
 }
 
 function PostMeta({ tags, inDtm, updateDtm, viewCount }: Props) {
-  const showUpdated = updateDtm !== inDtm;
-
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--color-text-muted)]">
-      <span>发布于 {formatPostDate(inDtm)}</span>
-      {showUpdated && (
-        <>
-          <span aria-hidden>·</span>
-          <span>更新于 {formatPostDate(updateDtm)}</span>
-        </>
-      )}
-      {tags.length > 0 && (
-        <>
-          <span aria-hidden>·</span>
-          <span className="flex flex-wrap gap-1.5">
-            {tags.map((t) => (
-              <span
-                key={t}
-                className="rounded-full bg-[var(--color-code-bg)] px-2 py-0.5 text-xs text-[var(--color-accent)]"
-              >
-                #{t}
-              </span>
-            ))}
-          </span>
-        </>
-      )}
-      <span aria-hidden>·</span>
-      <span>{viewCount.toLocaleString()} 次阅读</span>
+    <div className="garden-article-meta">
+      <span><CalendarBlank size={15} aria-hidden="true" /><time dateTime={new Date(inDtm * 1000).toISOString()}>{formatPostDate(inDtm)}</time></span>
+      {updateDtm !== inDtm && <span><Clock size={15} aria-hidden="true" />更新于 {formatPostDate(updateDtm)}</span>}
+      <span><Eye size={15} aria-hidden="true" />{viewCount.toLocaleString()} 次阅读</span>
+      {tags.length > 0 && <span className="garden-article-tags">{tags.map((tag) => <span key={tag}>#{tag}</span>)}</span>}
     </div>
   );
 }
 
 interface LayoutProps {
   title: string;
+  summary?: string;
   meta: Props;
   headerActions?: ReactNode;
   toc?: ReactNode;
@@ -51,41 +32,24 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-export default function PostArticleLayout({
-  title,
-  meta,
-  headerActions,
-  toc,
-  mobileToc,
-  footer,
-  children,
-}: LayoutProps) {
+export default function PostArticleLayout({ title, summary, meta, headerActions, toc, mobileToc, footer, children }: LayoutProps) {
   return (
-    <article>
-      <header className="mb-8 border-b border-[var(--color-border)] pb-8">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-          <h1 className="font-serif text-[clamp(2rem,5vw,2.75rem)] font-semibold leading-tight tracking-tight text-[var(--color-heading)]">
-            {title}
-          </h1>
-          {headerActions}
-        </div>
-        <div className="mt-4">
-          <PostMeta {...meta} />
-        </div>
+    <article className="garden-article">
+      <div className="garden-article-top"><Link to="/posts" className="garden-text-link"><ArrowLeft size={16} aria-hidden="true" /> 返回灵感</Link>{headerActions}</div>
+      <header className="garden-article-header">
+        <h1>{title}</h1>
+        {summary && <p className="garden-article-lead">{summary}</p>}
+        <PostMeta {...meta} />
       </header>
-
       {mobileToc}
-
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,42rem)_14rem] lg:justify-between">
-        <div className="min-w-0">{children}</div>
-        {toc && (
-          <aside className="hidden lg:block">
-            <div className="sticky top-24">{toc}</div>
-          </aside>
-        )}
+      <div className="garden-article-grid">
+        <div className="garden-article-body">
+          {children}
+          {footer && <footer className="garden-article-footer">{footer}</footer>}
+          <Link to="/posts" className="garden-text-link garden-article-return"><ArrowLeft size={16} aria-hidden="true" /> 继续读其他灵感</Link>
+        </div>
+        {toc && <aside className="garden-article-aside"><div>{toc}</div></aside>}
       </div>
-
-      {footer && <footer className="mt-12 border-t border-[var(--color-border)] pt-8">{footer}</footer>}
     </article>
   );
 }

@@ -176,7 +176,10 @@ export default function LedgerDashboardPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <PageHeader title="概览" compact />
+      <div className="flex items-center justify-between gap-3">
+        <PageHeader title="概览" compact />
+        <Link to="/ledger/chat" className="inline-flex min-h-11 items-center rounded-lg border border-[var(--color-border)] px-3 text-sm text-[var(--color-accent)] hover:bg-[var(--color-code-bg)]">对话记一笔</Link>
+      </div>
 
       {loading && <Spinner />}
 

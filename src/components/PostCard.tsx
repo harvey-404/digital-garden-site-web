@@ -1,35 +1,19 @@
+import { ArrowUpRight } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import type { PostVO } from "../types";
 import { formatPostDate } from "../lib/markdown";
 
-export default function PostCard({ post }: { post: PostVO }) {
+export default function PostCard({ post, compact = false }: { post: PostVO; compact?: boolean }) {
   return (
-    <Link
-      to={`/posts/${post.slug}`}
-      className="dg-card-glass group block rounded-xl p-5"
-    >
-      <h3 className="font-serif text-lg font-semibold text-[var(--color-heading)] transition group-hover:text-[var(--color-accent)]">
-        {post.title}
-      </h3>
-      {post.summary && (
-        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[var(--color-text-muted)]">
-          {post.summary}
-        </p>
-      )}
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]">
-        <time dateTime={new Date(post.inDtm * 1000).toISOString()}>{formatPostDate(post.inDtm)}</time>
-        {post.tags.map((t) => (
-          <span
-            key={t}
-            className="rounded-full bg-[var(--color-code-bg)] px-2 py-0.5 text-[var(--color-accent)]"
-          >
-            #{t}
-          </span>
-        ))}
-        <span className="ml-auto tabular-nums">
-          {post.viewCount} 阅读 · {post.likeCount} 赞
-        </span>
+    <Link to={"/posts/" + post.slug} className={"garden-post block " + (compact ? "garden-post--compact" : "")}>
+      <div className="garden-post-body">
+        <div className="garden-post-meta"><time dateTime={new Date(post.inDtm * 1000).toISOString()}>{formatPostDate(post.inDtm)}</time>{post.tags[0] && <span>{post.tags[0]}</span>}</div>
+        <h3>{post.title}</h3>
+        {!compact && post.summary && <p className="garden-post-summary">{post.summary}</p>}
+        {!compact && <div className="garden-post-bottom"><span className="garden-post-tags">{post.tags.map((tag) => <span key={tag}>#{tag}</span>)}</span><span>{post.viewCount} 阅读 · {post.likeCount} 赞</span></div>}
       </div>
+      {post.coverImage && <img className="garden-post-cover" src={post.coverImage} alt="" width="224" height="168" loading="lazy" />}
+      <ArrowUpRight className="garden-post-arrow" size={21} aria-hidden="true" />
     </Link>
   );
 }

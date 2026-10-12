@@ -12,7 +12,7 @@ export default function TableOfContents({ headings, activeId, onNavigate }: Prop
   return (
     <nav aria-label="文章目录" className="text-sm">
       <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-        On this page
+        本文目录
       </p>
       <ul className="space-y-2 border-l border-[var(--color-border)] pl-3">
         {headings.map((h) => (

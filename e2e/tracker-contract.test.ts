@@ -1,0 +1,85 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { formatDuration, progressText, progressLabel, ruleText, recordEditPayload, periodLabel, toUtc, localDisplay, timerElapsed, visibleHistoryRecords, retryRequestId } from '../src/pages/tracker/format.ts';
+import { canApplySnapshot, normalizeSelectedDate, queryKey } from '../src/pages/tracker/state.ts';
+
+test('seconds remain visible at a one-second overage', () => {
+  assert.equal(formatDuration(1), '1秒');
+  assert.equal(formatDuration(61), '1分1秒');
+  assert.equal(formatDuration(3600), '1小时');
+});
+
+test('minimum count uses qualified sessions and maximum uses raw count', () => {
+  const base = { count: 3, qualifiedCount: 2, durationSeconds: 0, goalValue: 2, remaining: 0, excess: 1 };
+  assert.equal(progressText({ ...base, rule: { metric: 'COUNT', direction: 'MIN', target: 3 } }), '2 / 3 次');
+  assert.equal(progressText({ ...base, rule: { metric: 'COUNT', direction: 'MAX', target: 2 } }), '3 / 2 次');
+});
+
+test('future statistics-only version and exclusive period end are legible', () => {
+  assert.equal(ruleText({ period: null, metric: null, direction: null, target: 0, sessionDirection: null, sessionSeconds: null, effectiveFrom: '2026-10-12' }), '10月12日起 · 仅统计');
+  assert.equal(periodLabel('2026-10-05', '2026-10-12'), '10月5日 - 10月11日');
+});
+
+test('note-only edit retains original nanoseconds and paused duration', () => {
+  const source = { quantity: 1, startedAt: '2026-10-09T02:03:04.123456789Z', durationSeconds: 61, note: '' };
+  const display = '2026-10-09T10:03';
+  assert.deepEqual(recordEditPayload(source, { quantity: 2, startDisplay: display, initialStartDisplay: display, durationMinutes: '1.02', initialDurationMinutes: '1.02', note: '调整' }, 'Asia/Shanghai'), {
+    quantity: 2, startedAt: source.startedAt, durationSeconds: 61, note: '调整',
+  });
+});
+
+test('account timezone datetime round trips and rejects nonexistent DST wall time', () => {
+  assert.equal(localDisplay(toUtc('2026-10-09T10:03', 'Asia/Shanghai'), 'Asia/Shanghai'), '2026-10-09T10:03');
+  assert.throws(() => toUtc('2026-03-08T02:30', 'America/New_York'), /不存在/);
+});
+
+test('live timer adds only elapsed since server synchronization', () => {
+  assert.equal(timerElapsed({ elapsedSeconds: 90, state: 'RUNNING' }, 100000, 105500), 95);
+  assert.equal(timerElapsed({ elapsedSeconds: 90, state: 'PAUSED' }, 100000, 105500), 90);
+});
+
+test('session overage does not claim periodic count overage of zero', () => {
+  const rule = { period: 'WEEK', metric: 'COUNT', direction: 'MIN', target: 3, sessionDirection: 'MAX', sessionSeconds: 7200, effectiveFrom: '2026-10-09', id: 1 };
+  const summary = { rule, status: 'OVER', remaining: 1, excess: 0, sessionExceeded: 1 };
+  assert.equal(progressLabel(summary), '还差1次 · 1次单次时长超限');
+  assert.equal(progressLabel({ ...summary, status: 'DONE', remaining: 0, sessionExceeded: 0 }), '目标已达成');
+});
+
+test('history never renders records loaded for a different activity or period', () => {
+  const old = [{ id: 1, activityId: 8 }];
+  assert.deepEqual(visibleHistoryRecords('9|2026-10-09|WEEK', '8|2026-10-09|WEEK', old), []);
+  assert.deepEqual(visibleHistoryRecords('8|2026-10-09|DAY', '8|2026-10-09|WEEK', old), []);
+  assert.deepEqual(visibleHistoryRecords('8|2026-10-09|WEEK', '8|2026-10-09|WEEK', old), old);
+});
+
+test('identical retried payload reuses request ID but edited payload gets a new one', () => {
+  const first = retryRequestId(null, 'goal A', () => 'id-1');
+  assert.equal(retryRequestId(first, 'goal A', () => 'id-2').id, 'id-1');
+  assert.equal(retryRequestId(first, 'goal B', () => 'id-2').id, 'id-2');
+});
+
+test('delayed mutation refresh cannot replace summaries after a period switch', () => {
+  const old = { date: '2026-10-09', period: 'DAY' };
+  const current = { date: '2026-10-09', period: 'WEEK' };
+  assert.notEqual(queryKey(old), queryKey(current));
+  assert.equal(canApplySnapshot(queryKey(old), queryKey(current), 4, 4), false);
+  assert.equal(canApplySnapshot(queryKey(current), queryKey(current), 3, 4), false);
+  assert.equal(canApplySnapshot(queryKey(current), queryKey(current), 4, 4), true);
+});
+
+test('clearing date picker keeps subsequent mutation and retry query on today', () => {
+  const date = normalizeSelectedDate('', '2026-10-09');
+  assert.equal(queryKey({ date, period: 'WEEK' }), '2026-10-09|WEEK');
+  assert.equal(normalizeSelectedDate('2026-10-08', '2026-10-09'), '2026-10-08');
+});
+
+test('custom count units appear in goals and progress while durations retain time units', () => {
+  const rule = { period: 'DAY', metric: 'COUNT', direction: 'MAX', target: 3, sessionDirection: null, sessionSeconds: null, effectiveFrom: '2026-10-09', id: 1 };
+  const summary = { rule, count: 2, qualifiedCount: 2, durationSeconds: 0, status: 'WITHIN', remaining: 1, excess: 0, sessionExceeded: 0 };
+  assert.equal(ruleText(rule, false, '杯'), '每天最多3杯');
+  assert.equal(progressText(summary, '杯'), '2 / 3 杯');
+  assert.equal(progressLabel(summary, '杯'), '剩余1杯');
+  const timed = { ...summary, rule: { ...rule, metric: 'DURATION', target: 1800 }, durationSeconds: 60, remaining: 1740 };
+  assert.equal(progressText(timed, '杯'), '1分 / 30分');
+  assert.equal(progressLabel(timed, '杯'), '剩余29分');
+});
