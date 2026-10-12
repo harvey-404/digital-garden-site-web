@@ -36,12 +36,12 @@ export function useLedgerChat() {
     const interval = setInterval(() => { refresh().catch(() => {}); }, 2500);
     return () => clearInterval(interval);
   }, [history?.processingRequestId, refresh]);
-  const updateDraft = useCallback((draft: ChatDraft) => {
-    setHistory(old => old ? { ...old, drafts: [...old.drafts.filter(d => d.id !== draft.id), draft], activeDraft: ["READY", "NEEDS_INPUT"].includes(draft.status) ? draft : old.activeDraft?.id === draft.id ? null : old.activeDraft } : old);
+  const updateDraft = useCallback((draft: ChatDraft, fromSend = false) => {
+    setHistory(old => old ? { ...old, drafts: [...old.drafts.filter(d => d.id !== draft.id), draft], activeDraft: ["READY", "NEEDS_INPUT"].includes(draft.status) && (fromSend || old.activeDraft?.id === draft.id) ? draft : old.activeDraft?.id === draft.id ? null : old.activeDraft } : old);
   }, []);
   const applyTurn = useCallback((turn: ChatTurn) => {
     setHistory(old => old ? { ...old, messages: [...old.messages.filter(m => m.id !== turn.userMessage.id && m.id !== turn.assistantMessage.id), turn.userMessage, turn.assistantMessage].sort((a, b) => a.id - b.id), processingRequestId: null } : old);
-    if (turn.draft) updateDraft(turn.draft);
+    if (turn.draft) updateDraft(turn.draft, true);
   }, [updateDraft]);
   async function run<T>(label: string, action: () => Promise<T>): Promise<T | null> {
     if (guard.current || history?.processingRequestId) return null;
@@ -61,17 +61,17 @@ export function useLedgerChat() {
       const old = pending.current;
       const req = old && old.text === text && JSON.stringify(old.attachmentIds) === JSON.stringify(ids) ? old : { requestId: requestId(), text, attachmentIds: ids, expectedDraftVersion: history?.activeDraft?.version ?? null };
       pending.current = req;
-      try { const turn = await api.sendChatMessage(req); applyTurn(turn); pending.current = null; return true; }
+      try { const turn = await api.sendChatMessage(req); applyTurn(turn); pending.current = null; await refresh().catch(() => {}); return true; }
       catch (e) {
         const state = await api.getChatRequest(req.requestId).catch(() => null);
-        if (state?.status === "DONE" && state.turn) { applyTurn(state.turn); pending.current = null; return true; }
+        if (state?.status === "DONE" && state.turn) { applyTurn(state.turn); pending.current = null; await refresh().catch(() => {}); return true; }
         throw e;
       }
     });
     return result === true;
   }
   async function retry(m: ChatMessage) {
-    await run("重新识别中…", async () => { const turn = await api.sendChatMessage({ requestId: m.requestId!, text: m.text, attachmentIds: m.attachmentIds, expectedDraftVersion: history?.activeDraft?.version ?? null }); applyTurn(turn); });
+    await run("重新识别中…", async () => { const turn = await api.sendChatMessage({ requestId: m.requestId!, text: m.text, attachmentIds: m.attachmentIds, expectedDraftVersion: history?.activeDraft?.version ?? null }); applyTurn(turn); await refresh().catch(() => {}); });
   }
   async function edit(d: ChatDraft, itemId: number, fields: Omit<EditDraftItemRequest, "expectedVersion">) {
     const updated = await run("正在更新草稿…", () => api.editChatItem(d.id, itemId, { ...fields, expectedVersion: d.version }));
@@ -95,5 +95,5 @@ export function useLedgerChat() {
     const older = await run("加载更早记录…", () => api.getChatHistory(history.nextBeforeId!));
     if (older) setHistory(old => old ? { ...old, messages: [...older.messages, ...old.messages].filter((m, i, all) => all.findIndex(x => x.id === m.id) === i), drafts: [...older.drafts, ...old.drafts].filter((d, i, all) => all.findIndex(x => x.id === d.id) === i), nextBeforeId: older.nextBeforeId } : older);
   }
-  return { history, categories, busy: busy ?? (history?.processingRequestId ? "正在恢复识别结果…" : null), error, setError, refresh, send, retry, edit, remove, act, loadOlder };
+  return { history, categories, identityKey: history?.guest?.identityKey ?? (token ? `account:${token}` : null), adoptedGuestKey: history?.guest?.adoptedGuestKey ?? null, busy: busy ?? (history?.processingRequestId ? "正在恢复识别结果…" : null), error, setError, refresh, send, retry, edit, remove, act, loadOlder };
 }

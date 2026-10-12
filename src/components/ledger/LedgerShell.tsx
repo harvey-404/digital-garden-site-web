@@ -13,7 +13,7 @@ const ledgerLinks = [
 ];
 
 export default function LedgerShell() {
-  const { me, signOut } = useLedgerAuth();
+  const { me, guest, signOut } = useLedgerAuth();
   const navigate = useNavigate();
   const [month, setMonth] = useLedgerMonth();
   const [params] = useSearchParams();
@@ -29,7 +29,7 @@ export default function LedgerShell() {
     try { await signOut(); navigate("/login?next=%2Fledger"); } catch (e) { window.alert(e instanceof Error ? e.message : "退出失败，请重试"); }
   };
 
-  const name = me?.displayName?.trim() || me?.userSn || "账本";
+  const name = guest?.isGuest ? "游客账本" : me?.displayName?.trim() || me?.userSn || "账本";
   const monthSearch = `?month=${encodeURIComponent(month)}`;
 
   return (
@@ -60,13 +60,13 @@ export default function LedgerShell() {
           <span className="truncate max-w-[10rem] sm:max-w-[12rem]" title={name}>
             {name}
           </span>
-          <button
+          {!guest?.isGuest && <button
             type="button"
             onClick={handleSignOut}
             className="shrink-0 rounded-lg px-2 py-1 text-[var(--color-accent)] transition hover:bg-[var(--color-code-bg)]"
           >
             退出
-          </button>
+          </button>}
         </div>
       </div>
 

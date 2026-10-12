@@ -3,16 +3,39 @@ import type { DragEvent } from "react";
 import { ArrowUp, ImageSquare, X, SpinnerGap } from "@phosphor-icons/react";
 import type { SelectedImage } from "../../../types/ledgerChat";
 import { requestId } from "../../../hooks/useLedgerChat";
+import { clearComposer, loadComposer, saveComposer } from "../../../lib/ledgerComposer";
 
-interface Props { busy: string | null; available: boolean; suggestion: string; onSend: (text: string, images: SelectedImage[]) => Promise<boolean>; onError: (message: string) => void }
-export default function ChatComposer({ busy, available, suggestion, onSend, onError }: Props) {
+interface Props { busy: string | null; available: boolean; suggestion: string; identityKey: string | null; adoptedGuestKey: string | null; onSend: (text: string, images: SelectedImage[]) => Promise<boolean>; onError: (message: string) => void }
+export default function ChatComposer({ busy, available, suggestion, identityKey, adoptedGuestKey, onSend, onError }: Props) {
   const [text, setText] = useState(""); const [images, setImages] = useState<SelectedImage[]>([]);
+  const [restored, setRestored] = useState(false);
+  const currentText = useRef(text); currentText.current = text;
+  available = available && restored;
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
   const input = useRef<HTMLInputElement>(null); const area = useRef<HTMLTextAreaElement>(null);
   const currentImages = useRef(images); currentImages.current = images;
   useEffect(() => () => { currentImages.current.forEach(i => URL.revokeObjectURL(i.preview)); }, []);
-  useEffect(() => { if (suggestion) { setText(suggestion); area.current?.focus(); } }, [suggestion]);
+  useEffect(() => {
+    if (!identityKey) { setRestored(true); return; }
+    let cancelled = false;
+    loadComposer(identityKey, adoptedGuestKey).then(draft => {
+      if (cancelled) return;
+      const images = draft.images.map(i => ({ ...i, preview: URL.createObjectURL(i.file) }));
+      currentText.current = draft.text; currentImages.current = images;
+      setText(draft.text); setImages(images); setRestored(true);
+    }).catch(() => { if (!cancelled) setRestored(true); });
+    return () => { cancelled = true; };
+  }, [identityKey, adoptedGuestKey]);
+  function persist(nextText: string, nextImages: SelectedImage[], saveImages = true) {
+    if (identityKey) {
+      try { void saveComposer(identityKey, { text: nextText, images: nextImages }, saveImages).catch(() => onError("图片暂未保存到浏览器，离开前请先发送")); }
+      catch { onError("浏览器暂时无法保存未发送内容，离开前请先发送"); }
+    }
+  }
+  function updateText(value: string) { currentText.current = value; setText(value); persist(value, currentImages.current, false); }
+  function updateImages(value: SelectedImage[]) { currentImages.current = value; setImages(value); persist(currentText.current, value); }
+  useEffect(() => { if (suggestion) { updateText(suggestion); area.current?.focus(); } }, [suggestion]);
   useEffect(() => { if (area.current) { area.current.style.height = "auto"; area.current.style.height = `${Math.min(116, area.current.scrollHeight)}px`; } }, [text]);
   useEffect(() => {
     function preventFileNavigation(event: globalThis.DragEvent) {
@@ -56,21 +79,25 @@ export default function ChatComposer({ busy, available, suggestion, onSend, onEr
     const chosen = Array.from(files);
     if (chosen.some(f => f.size > 10 * 1024 * 1024)) { onError("每张图片最多10MB"); return; }
     if (chosen.some(f => !["image/jpeg", "image/png", "image/webp"].includes(f.type))) { onError("请选择JPEG、PNG或WebP图片；HEIC请先转为JPEG"); return; }
-    setImages(old => [...old, ...chosen.map(file => ({ key: requestId(), file, preview: URL.createObjectURL(file) }))]);
+    updateImages([...currentImages.current, ...chosen.map(file => ({ key: requestId(), file, preview: URL.createObjectURL(file) }))]);
     if (input.current) input.current.value = "";
   }
   async function submit() {
     if (busy || !available || (!text.trim() && images.length === 0)) return;
-    if (await onSend(text.trim(), images)) { images.forEach(i => URL.revokeObjectURL(i.preview)); setImages([]); setText(""); area.current?.focus(); }
+    if (await onSend(text.trim(), images)) {
+      images.forEach(i => URL.revokeObjectURL(i.preview)); currentImages.current = []; currentText.current = ""; setImages([]); setText("");
+      if (identityKey) await clearComposer(identityKey).catch(() => {});
+      area.current?.focus();
+    } else persist(text, images);
   }
   return <div className={`chat-composer-wrap${dragging ? " chat-composer-dragging" : ""}`} onDragEnter={enter} onDragLeave={leave} onDragOver={over} onDrop={drop}>
     {images.length > 0 && <div className="chat-composer-images">{images.map(image => <div className="chat-upload-preview" key={image.key}>
-      <img src={image.preview} alt="待发送的消费图片" /><button type="button" disabled={!!busy} aria-label="移除待发送图片" onClick={() => { URL.revokeObjectURL(image.preview); setImages(old => old.filter(i => i.key !== image.key)); }}><X size={16} /></button>
+      <img src={image.preview} alt="待发送的消费图片" /><button type="button" disabled={!!busy} aria-label="移除待发送图片" onClick={() => { URL.revokeObjectURL(image.preview); updateImages(currentImages.current.filter(i => i.key !== image.key)); }}><X size={16} /></button>
     </div>)}</div>}
     <div className="chat-composer">
       <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={e => choose(e.target.files)} />
       <button className="chat-icon-button" type="button" aria-label="添加消费图片" title="添加付款截图或小票" disabled={!!busy || !available} onClick={() => input.current?.click()}><ImageSquare size={24} /></button>
-      <textarea ref={area} aria-label="消费描述" placeholder="说说这笔消费，或发张截图…" value={text} maxLength={4000} disabled={!!busy || !available} rows={1} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !e.nativeEvent.isComposing) { e.preventDefault(); void submit(); } }} />
+      <textarea ref={area} aria-label="消费描述" placeholder="说说这笔消费，或发张截图…" value={text} maxLength={4000} disabled={!!busy || !available} rows={1} onChange={e => updateText(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !e.nativeEvent.isComposing) { e.preventDefault(); void submit(); } }} />
       <button className="chat-send" type="button" aria-label="发送消息" disabled={!!busy || !available || (!text.trim() && !images.length)} onClick={() => void submit()}>{busy ? <SpinnerGap size={21} /> : <ArrowUp size={22} weight="bold" />}</button>
     </div>
     <p className="chat-composer-hint" role="status">{dragging ? "松开添加消费图片" : busy ?? "支持文字和图片，可拖入图片，确认后才会记入账本"}</p>

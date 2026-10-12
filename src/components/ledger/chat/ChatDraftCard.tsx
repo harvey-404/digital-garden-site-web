@@ -7,12 +7,12 @@ import ChatItemEditor from "./ChatItemEditor";
 function money(raw: string | null) { return raw === null ? "待补充" : /^\d+(\.\d{1,2})?$/.test(raw) ? `¥${Number(raw).toLocaleString("zh-CN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `¥${raw}`; }
 const dateLabel = (value: number | null) => value ? new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value * 1000)) : "日期待确认";
 interface Props {
-  draft: ChatDraft; categories: LedgerCategoryVO[]; busy: boolean;
+  draft: ChatDraft; categories: LedgerCategoryVO[]; busy: boolean; guest?: boolean;
   onEdit: (draft: ChatDraft, id: number, fields: Omit<EditDraftItemRequest, "expectedVersion">) => Promise<boolean>;
   onRemove: (draft: ChatDraft, id: number) => Promise<void>;
   onAct: (draft: ChatDraft, action: "confirm" | "cancel" | "revoke") => Promise<void>;
 }
-export default function ChatDraftCard({ draft, categories, busy, onEdit, onRemove, onAct }: Props) {
+export default function ChatDraftCard({ draft, categories, busy, guest, onEdit, onRemove, onAct }: Props) {
   const [editing, setEditing] = useState<DraftItem | null>(null);
   const [revoking, setRevoking] = useState(false); const [cancelling, setCancelling] = useState(false);
   const root = useRef<HTMLElement>(null);
@@ -35,7 +35,7 @@ export default function ChatDraftCard({ draft, categories, busy, onEdit, onRemov
     </li>)}</ol>
     {!draft.count && <p className="chat-empty-list">已移除所有条目，可继续补充或取消本次草稿。</p>}
     <div className="chat-draft-total"><span>共{draft.count}笔 <span className="chat-total-label">合计</span></span><strong>{money(draft.total)}</strong></div>
-    {editable ? <div className="chat-draft-footer"><button type="button" className="chat-primary" disabled={busy || !draft.canConfirm} onClick={() => void onAct(draft, "confirm")}>{busy ? "处理中…" : "确认全部记账"}</button><button type="button" className="chat-secondary" disabled={busy} onClick={() => setCancelling(true)}>取消</button></div> : draft.status === "CONFIRMED" ? <div className="chat-saved-actions"><Link to={`/ledger/expenses?month=${month}`}>查看明细</Link><button type="button" className="chat-row-action" disabled={busy} onClick={() => setRevoking(true)}><ArrowCounterClockwise size={16} />撤销本次记账</button></div> : null}
+    {editable ? <div className="chat-draft-footer">{guest ? <span>草稿已保留，<Link to="/login?next=%2Fledger%2Fchat">登录</Link>或<Link to="/register?next=%2Fledger%2Fchat">注册</Link>后确认记账。</span> : <button type="button" className="chat-primary" disabled={busy || !draft.canConfirm} onClick={() => void onAct(draft, "confirm")}>{busy ? "处理中…" : "确认全部记账"}</button>}<button type="button" className="chat-secondary" disabled={busy} onClick={() => setCancelling(true)}>取消</button></div> : draft.status === "CONFIRMED" ? <div className="chat-saved-actions"><Link to={`/ledger/expenses?month=${month}`}>查看明细</Link><button type="button" className="chat-row-action" disabled={busy} onClick={() => setRevoking(true)}><ArrowCounterClockwise size={16} />撤销本次记账</button></div> : null}
     {(revoking || cancelling) && <div className="chat-confirm-action" role="group" aria-label={revoking ? "确认撤销" : "确认取消"}><p>{revoking ? `撤销本次${draft.count}笔记录？` : "取消这份未入账的草稿？"}</p><div><button type="button" className="chat-danger" disabled={busy} onClick={async () => { await onAct(draft, revoking ? "revoke" : "cancel"); setRevoking(false); setCancelling(false); }}>{revoking ? "确定撤销" : "确定取消"}</button><button type="button" className="chat-secondary" disabled={busy} onClick={() => { setRevoking(false); setCancelling(false); }}>返回</button></div></div>}
     {editing && <ChatItemEditor key={editing.id} item={editing} categories={categories} busy={busy} onClose={() => setEditing(null)} onSave={fields => onEdit(draft, editing.id, fields)} />}
   </section>;

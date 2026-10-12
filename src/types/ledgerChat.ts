@@ -20,7 +20,9 @@ export interface ChatHistory {
   messages: ChatMessage[]; drafts: ChatDraft[]; activeDraft: ChatDraft | null;
   nextBeforeId: number | null; processingRequestId: string | null;
   capabilities: { available: boolean; imageInput: boolean };
+  guest?: LedgerGuestStatus;
 }
+export interface LedgerGuestStatus { isGuest: boolean; remaining: number | null; limit: number; identityKey?: string; adoptedGuestKey?: string | null }
 export interface ChatTurn { userMessage: ChatMessage; assistantMessage: ChatMessage; draft: ChatDraft | null }
 export interface SendMessageRequest { requestId: string; text: string; attachmentIds: number[]; expectedDraftVersion: number | null }
 export interface EditDraftItemRequest {

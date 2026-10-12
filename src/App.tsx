@@ -3,7 +3,10 @@ import Spinner from "./components/Spinner";
 import { AccountProvider } from "./context/AccountContext";
 import RequireAccount from "./components/RequireAccount";
 import AccountPage, { AccountForm, LegacyAccountRedirect } from "./pages/account/AccountPage";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useAccount } from "./context/AccountContext";
+import RequireLedgerChat from "./components/RequireLedgerChat";
+import type { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import { LedgerAuthProvider } from "./context/LedgerAuthContext";
@@ -48,6 +51,14 @@ const LedgerSettingsPage = lazy(() => import("./pages/ledger/LedgerSettingsPage"
 const LedgerChatPage = lazy(() => import("./pages/ledger/LedgerChatPage"));
 const TrackerPage = lazy(() => import("./pages/tracker/TrackerPage"));
 
+function LedgerArea({ children }: { children: ReactNode }) {
+  const { account, loading } = useAccount();
+  const location = useLocation();
+  if (loading) return <Spinner />;
+  if (!account && location.pathname === '/ledger') return <Navigate to="/ledger/chat" replace />;
+  return <RequireAccount><RequireLedgerAuth>{children}</RequireLedgerAuth></RequireAccount>;
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -76,17 +87,19 @@ export default function App() {
               <Route path="games/semantic" element={<SemanticGamePage />} />
               <Route path="ledger/login" element={<LegacyAccountRedirect next="/ledger" />} />
               <Route path="ledger/onboarding" element={<RequireAccount><LedgerOnboardingPage /></RequireAccount>} />
+              <Route path="ledger/chat" element={<RequireLedgerChat><LedgerShell /></RequireLedgerChat>}>
+                <Route index element={<LedgerChatPage />} />
+              </Route>
               <Route
                 path="ledger"
                 element={
-                  <RequireAccount><RequireLedgerAuth>
+                  <LedgerArea>
                     <LedgerShell />
-                  </RequireLedgerAuth></RequireAccount>
+                  </LedgerArea>
                 }
               >
                 <Route index element={<LedgerDashboardPage />} />
                 <Route path="expenses" element={<LedgerExpensesPage />} />
-                <Route path="chat" element={<LedgerChatPage />} />
                 <Route path="budgets" element={<LedgerBudgetsPage />} />
                 <Route path="categories" element={<LedgerCategoriesPage />} />
                 <Route path="settings" element={<LedgerSettingsPage />} />
