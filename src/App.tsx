@@ -1,5 +1,8 @@
 import { lazy, Suspense } from "react";
 import Spinner from "./components/Spinner";
+import { AccountProvider } from "./context/AccountContext";
+import RequireAccount from "./components/RequireAccount";
+import AccountPage, { AccountForm, LegacyAccountRedirect } from "./pages/account/AccountPage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
@@ -36,7 +39,6 @@ const AdminLedgerUsersPage = lazy(() => import("./pages/admin/AdminLedgerUsersPa
 const AlbumPage = lazy(() => import("./pages/AlbumPage"));
 const GamesPage = lazy(() => import("./pages/GamesPage"));
 const SemanticGamePage = lazy(() => import("./pages/SemanticGamePage"));
-const LedgerLoginPage = lazy(() => import("./pages/ledger/LedgerLoginPage"));
 const LedgerOnboardingPage = lazy(() => import("./pages/ledger/LedgerOnboardingPage"));
 const LedgerDashboardPage = lazy(() => import("./pages/ledger/LedgerDashboardPage"));
 const LedgerExpensesPage = lazy(() => import("./pages/ledger/LedgerExpensesPage"));
@@ -45,20 +47,24 @@ const LedgerCategoriesPage = lazy(() => import("./pages/ledger/LedgerCategoriesP
 const LedgerSettingsPage = lazy(() => import("./pages/ledger/LedgerSettingsPage"));
 const LedgerChatPage = lazy(() => import("./pages/ledger/LedgerChatPage"));
 const TrackerPage = lazy(() => import("./pages/tracker/TrackerPage"));
-const TrackerLoginPage = lazy(() => import("./pages/tracker/TrackerPage").then((module) => ({ default: module.TrackerLoginPage })));
 
 export default function App() {
   return (
     <AuthProvider>
-      <LedgerAuthProvider>
+      <AccountProvider>
         <BrowserRouter>
+        <LedgerAuthProvider>
           <Toaster position="top-center" />
           <Suspense fallback={<Spinner />}>
           <Routes>
-            <Route path="/tracker/login" element={<TrackerLoginPage />} />
-            <Route path="/tracker" element={<TrackerPage />} />
+            <Route path="/tracker/login" element={<LegacyAccountRedirect next="/tracker" />} />
+            <Route path="/tracker" element={<RequireAccount><TrackerPage /></RequireAccount>} />
             <Route element={<Layout />}>
               <Route index element={<HomePage />} />
+              <Route path="login" element={<AccountForm mode="login" />} />
+              <Route path="register" element={<AccountForm mode="register" />} />
+              <Route path="reset-password" element={<AccountForm mode="reset" />} />
+              <Route path="account" element={<AccountPage />} />
               <Route path="posts" element={<PostListPage />} />
               <Route path="posts/:slug" element={<PostDetailPage />} />
               <Route path="projects" element={<ProjectListPage />} />
@@ -68,14 +74,14 @@ export default function App() {
               <Route path="about" element={<AboutPage />} />
               <Route path="games" element={<GamesPage />} />
               <Route path="games/semantic" element={<SemanticGamePage />} />
-              <Route path="ledger/login" element={<LedgerLoginPage />} />
-              <Route path="ledger/onboarding" element={<LedgerOnboardingPage />} />
+              <Route path="ledger/login" element={<LegacyAccountRedirect next="/ledger" />} />
+              <Route path="ledger/onboarding" element={<RequireAccount><LedgerOnboardingPage /></RequireAccount>} />
               <Route
                 path="ledger"
                 element={
-                  <RequireLedgerAuth>
+                  <RequireAccount><RequireLedgerAuth>
                     <LedgerShell />
-                  </RequireLedgerAuth>
+                  </RequireLedgerAuth></RequireAccount>
                 }
               >
                 <Route index element={<LedgerDashboardPage />} />
@@ -119,8 +125,9 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           </Suspense>
+        </LedgerAuthProvider>
         </BrowserRouter>
-      </LedgerAuthProvider>
+      </AccountProvider>
     </AuthProvider>
   );
 }

@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-async function dragFiles(page: import("@playwright/test").Page, files: {name: string; type: string}[], event: string) {
+async function dragFiles(page: import("@playwright/test").Page, files: {name: string; type: string}[], event: string, waitUntilReady = true) {
+  if (waitUntilReady) await expect(page.getByRole("textbox",{name:"消费描述"})).toBeEnabled();
   const transfer=await page.evaluateHandle(files=>{
     const data=new DataTransfer();
     for(const file of files)data.items.add(new File([new Uint8Array([137,80,78,71])],file.name,{type:file.type}));
@@ -20,7 +21,8 @@ test.beforeEach(async ({ page }) => {
   ];
   let active=false;
   const draft=()=>({id:5,version,status,items,total:items.reduce((s,i)=>s+Number(i.amount),0).toFixed(2),count:items.length,canConfirm:status==="READY" && items.length>0,savedExpenses:status==="CONFIRMED"?items.map(i=>({...i,id:i.id+100})):[]});
-  await page.addInitScript(()=>{localStorage.setItem("ledger_token","test-token");localStorage.setItem("dg-theme","light");});
+  await page.addInitScript(()=>{localStorage.setItem("dg-theme","light");});
+  await page.route("**/api/account/me", route => route.fulfill({json:{code:0,message:"success",data:{id:1,email:"reader@example.com",displayName:"测试用户",timezone:"Asia/Shanghai",links:{ledger:true,tracker:false}}}}));
   await page.route("**/api/ledger/**",async route=>{
     const url=new URL(route.request().url()),path=url.pathname,method=route.request().method();
     let data: unknown=null;
@@ -112,6 +114,7 @@ test("拖入图片沿用数量和格式限制",async({page})=>{
 
 test("过大图片被拒绝，处理消息时禁止拖入",async({page})=>{
   await page.goto("/ledger/chat");
+  await expect(page.getByRole("textbox",{name:"消费描述"})).toBeEnabled();
   const large=await page.evaluateHandle(()=>{
     const data=new DataTransfer();data.items.add(new File([new Uint8Array(10*1024*1024+1)],"large.png",{type:"image/png"}));return data;
   });
@@ -124,7 +127,7 @@ test("过大图片被拒绝，处理消息时禁止拖入",async({page})=>{
   await page.getByRole("textbox",{name:"消费描述"}).fill("午饭32块5，打车18");
   await page.getByRole("button",{name:"发送消息"}).click();
   await expect(page.getByRole("textbox",{name:"消费描述"})).toBeDisabled();
-  await dragFiles(page,[{name:"receipt.png",type:"image/png"}],"drop");
+  await dragFiles(page,[{name:"receipt.png",type:"image/png"}],"drop",false);
   await expect(page.getByAltText("待发送的消费图片")).toHaveCount(0);
   release();await expect(page.getByText("¥50.50",{exact:true})).toBeVisible();
 });

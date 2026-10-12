@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { List, X, ArrowUpRight } from "@phosphor-icons/react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAccount } from "../context/AccountContext";
 import ThemeToggle from "./ThemeToggle";
 
 const links = [
@@ -15,6 +16,7 @@ const links = [
 ];
 
 export default function Navbar({ compact = false }: { compact?: boolean }) {
+  const { account } = useAccount();
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   useEffect(() => setOpen(false), [pathname]);
@@ -44,6 +46,7 @@ export default function Navbar({ compact = false }: { compact?: boolean }) {
                 </NavLink>
               </li>
             ))}
+          <li><NavLink to={account ? "/account" : "/login"} className="garden-nav-link">{account ? "账号" : "登录"}</NavLink></li>
           </ul>
           <ThemeToggle />
           <button type="button" className="garden-menu-toggle" aria-label={open ? "收起导航" : "展开导航"} aria-expanded={open} aria-controls="garden-navigation" onClick={() => setOpen((value) => !value)} onKeyDown={(event) => { if (event.key === "Escape") setOpen(false); }}>

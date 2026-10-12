@@ -25,9 +25,8 @@ export default function LedgerShell() {
     }
   }, [params, month, setMonth, isChat]);
 
-  const handleSignOut = () => {
-    signOut();
-    navigate("/ledger/login");
+  const handleSignOut = async () => {
+    try { await signOut(); navigate("/login?next=%2Fledger"); } catch (e) { window.alert(e instanceof Error ? e.message : "退出失败，请重试"); }
   };
 
   const name = me?.displayName?.trim() || me?.userSn || "账本";

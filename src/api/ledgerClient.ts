@@ -6,23 +6,17 @@ export function getLedgerToken(): string | null {
   return localStorage.getItem(LEDGER_TOKEN_KEY);
 }
 
-export function setLedgerToken(token: string): void {
-  localStorage.setItem(LEDGER_TOKEN_KEY, token);
-}
-
 export function clearLedgerToken(): void {
   localStorage.removeItem(LEDGER_TOKEN_KEY);
 }
 
 /**
- * Fetch wrapper for `/api/ledger/**` using `ledger_token` (separate from admin `dg_token`).
+ * Fetch wrapper for `/api/ledger/**` using the shared HttpOnly session cookie. Legacy tokens are ownership proof only.
  * On 403 ONBOARDING_REQUIRED, redirects to `/ledger/onboarding`.
  */
 export async function ledgerFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = getLedgerToken();
   const headers: Record<string, string> = {
     ...(!(init.body instanceof FormData) ? { "Content-Type": "application/json" } : {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
   if (init.headers) {
     const extra = new Headers(init.headers);
@@ -33,15 +27,14 @@ export async function ledgerFetch<T>(path: string, init: RequestInit = {}): Prom
 
   const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? "/api"}/ledger${path}`, {
     ...init,
-    headers,
+    headers, credentials: "same-origin",
   });
 
   const body = (await res.json()) as ApiResult<T>;
 
   if (body.code === 401) {
-    clearLedgerToken();
     if (window.location.pathname === "/ledger" || window.location.pathname.startsWith("/ledger/")) {
-      window.location.href = "/ledger/login";
+      window.location.href = `/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
     }
     throw new Error("登录已过期，请重新登录");
   }
@@ -60,9 +53,8 @@ export async function ledgerFetch<T>(path: string, init: RequestInit = {}): Prom
 }
 
 export async function getLedgerBlob(path: string, signal?: AbortSignal): Promise<Blob> {
-  const token = getLedgerToken();
   const res = await fetch(`${import.meta.env.VITE_API_BASE_URL ?? "/api"}/ledger${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {}, signal,
+    credentials: "same-origin", signal,
   });
   if (!res.ok || !res.headers.get("Content-Type")?.startsWith("image/")) {
     let message = "图片无法读取";
